@@ -5,6 +5,18 @@ import prettier from 'eslint-config-prettier'
 
 export default defineConfig([
   {
+    // 👈 ADICIONA ISSO PRIMEIRO
+    ignores: [
+      'node_modules/**',
+      '.postgres/**',
+      'dist/**',
+      'build/**',
+      'coverage/**',
+      '*.log',
+      '.env*'
+    ]
+  },
+  {
     files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',

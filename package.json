@@ -7,7 +7,8 @@
   "scripts": {
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
-    "format": "prettier --write .",
+    "format": "prettier --write \"src/**/*.js\"",
+    "format:all": "prettier --write .",
     "prepare": "husky"
   },
   "keywords": [],
@@ -23,5 +24,10 @@
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.3"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.20.0"
   }
 }
