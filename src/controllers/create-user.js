@@ -1,4 +1,8 @@
+import validator from 'validator'
+
 import { CreateUserUseCase } from '../use-cases/create-user.js'
+
+import { badRequest, conflict, created, internalServerError } from './helper.js'
 
 export class CreateUserController {
   constructor() {
@@ -9,7 +13,6 @@ export class CreateUserController {
     try {
       const { first_name, last_name, email, password } = req.body
 
-      // validação de campos obrigatórios
       const requiredFields = {
         first_name,
         last_name,
@@ -21,44 +24,48 @@ export class CreateUserController {
         const value = requiredFields[field]
 
         if (!value || value.trim().length === 0) {
-          return res.status(400).json({
-            error: `Missing param: ${field}`
-          })
+          return badRequest(res, `Missing param: ${field}`)
         }
       }
 
-      if (first_name.trim().length > 50) {
-        return res.status(400).json({
-          error: 'First name must have a maximum of 50 characters'
-        })
-      }
-
-      if (last_name.trim().length > 50) {
-        return res.status(400).json({
-          error: 'Last name must have a maximum of 50 characters'
-        })
-      }
-
-      // normalizar email
       const normalizedEmail = email.trim().toLowerCase()
 
-      // validação de email
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-      if (!emailRegex.test(normalizedEmail)) {
-        return res.status(400).json({
-          error: 'Invalid email'
+      if (
+        !validator.isLength(first_name.trim(), {
+          min: 1,
+          max: 50
         })
+      ) {
+        return badRequest(
+          res,
+          'First name must have between 1 and 50 characters'
+        )
       }
 
-      // tamanho mínimo da senha
-      if (password.trim().length < 6) {
-        return res.status(400).json({
-          error: 'Password must have at least 6 characters'
+      if (
+        !validator.isLength(last_name.trim(), {
+          min: 1,
+          max: 50
         })
+      ) {
+        return badRequest(
+          res,
+          'Last name must have between 1 and 50 characters'
+        )
       }
 
-      // executar regra de negócio
+      if (!validator.isEmail(normalizedEmail)) {
+        return badRequest(res, 'Invalid email')
+      }
+
+      if (
+        !validator.isLength(password.trim(), {
+          min: 6
+        })
+      ) {
+        return badRequest(res, 'Password must have at least 6 characters')
+      }
+
       const user = await this.createUserUseCase.execute({
         first_name,
         last_name,
@@ -66,25 +73,19 @@ export class CreateUserController {
         password
       })
 
-      // sucesso
-      return res.status(201).json(user)
+      return created(res, user)
     } catch (error) {
-      // erros esperados do use case
-      if (
-        error.message === 'Todos os campos são obrigatórios' ||
-        error.message === 'Email já cadastrado'
-      ) {
-        return res.status(400).json({
-          error: error.message
-        })
+      if (error.message === 'Email já cadastrado') {
+        return conflict(res, error.message)
       }
 
-      // erro interno
+      if (error.message === 'Todos os campos são obrigatórios') {
+        return badRequest(res, error.message)
+      }
+
       console.error(error)
 
-      return res.status(500).json({
-        error: 'Internal server error'
-      })
+      return internalServerError(res)
     }
   }
 }
