@@ -16,7 +16,14 @@ export const pool = new Pool({
 
 export const PostgresHelper = {
   query: async (query, params) => {
-    const result = await pool.query(query, params)
-    return result.rows
+    try {
+      const result = await pool.query(query, params)
+
+      return result.rows
+    } catch (error) {
+      console.error('Postgres error:', error)
+
+      throw error
+    }
   }
 }

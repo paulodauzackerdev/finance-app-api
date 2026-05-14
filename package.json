@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "start:dev": "node --watch index.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
     "format": "prettier --write \"src/**/*.js\"",

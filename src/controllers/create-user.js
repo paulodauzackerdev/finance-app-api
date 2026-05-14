@@ -26,9 +26,13 @@ export class CreateUserController {
           })
         }
       }
+      // normalizar email
+      const normalizedEmail = email.trim().toLowerCase()
 
-      // validação básica de email
-      if (!email.includes('@')) {
+      // validação de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+      if (!emailRegex.test(normalizedEmail)) {
         return res.status(400).json({
           error: 'Invalid email'
         })
@@ -45,7 +49,7 @@ export class CreateUserController {
       const user = await this.createUserUseCase.execute({
         first_name,
         last_name,
-        email,
+        email: normalizedEmail,
         password
       })
 
