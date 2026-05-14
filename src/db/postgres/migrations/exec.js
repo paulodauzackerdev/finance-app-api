@@ -4,7 +4,7 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import { pool } from '../helper.js'
 
-const migrationsIgnore = 2 // Ignorar SQL a partir do número
+const migrationsIgnore = 0 // Ignorar SQL a partir do número
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 const execMigrations = async () => {

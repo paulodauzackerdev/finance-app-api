@@ -5,7 +5,6 @@ import prettier from 'eslint-config-prettier'
 
 export default defineConfig([
   {
-    // 👈 ADICIONA ISSO PRIMEIRO
     ignores: [
       'node_modules/**',
       '.postgres/**',
@@ -13,7 +12,8 @@ export default defineConfig([
       'build/**',
       'coverage/**',
       '*.log',
-      '.env*'
+      '.env*',
+      '/.postgres/18/docker'
     ]
   },
   {

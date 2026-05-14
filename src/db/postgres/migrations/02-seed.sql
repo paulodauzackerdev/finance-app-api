@@ -1,26 +1,63 @@
--- usuários
-INSERT INTO users (id, first_name, last_name, email, password)
-VALUES
-  (gen_random_uuid(), 'Paulo', 'Dauzacker', 'paulodauzacker@email.com', '123456'),
-  (gen_random_uuid(), 'Alexia', 'Vieira', 'alexia@email.com', '123456'),
-  (gen_random_uuid(), 'Ana', 'Carolina', 'anacarolina@email.com', '123456');
+-- =========================================
+-- LIMPEZA (opcional em dev)
+-- =========================================
 
--- transações
-INSERT INTO transactions (user_id, name, transaction_date, amount, description, type)
+TRUNCATE TABLE transactions RESTART IDENTITY CASCADE;
+TRUNCATE TABLE users RESTART IDENTITY CASCADE;
+
+
+-- =========================================
+-- USERS
+-- =========================================
+
+INSERT INTO users (first_name, last_name, email, password_hash)
+VALUES
+  (
+    'Paulo',
+    'Dauzacker',
+    'paulo@email.com',
+    '$2b$10$KbQi6VqU4v1l0lT5uQmCNe9ZxQ2s6g9G8Wl0wQ2f8yQ2eZ1z1z1z1' -- hash fake
+  ),
+  (
+    'Alexia',
+    'Vieira',
+    'alexia@email.com',
+    '$2b$10$KbQi6VqU4v1l0lT5uQmCNe9ZxQ2s6g9G8Wl0wQ2f8yQ2eZ1z1z1z1'
+  ),
+  (
+    'Ana',
+    'Carolina',
+    'ana@email.com',
+    '$2b$10$KbQi6VqU4v1l0lT5uQmCNe9ZxQ2s6g9G8Wl0wQ2f8yQ2eZ1z1z1z1'
+  );
+
+
+-- =========================================
+-- TRANSACTIONS
+-- =========================================
+
+INSERT INTO transactions (
+  user_id,
+  name,
+  amount,
+  description,
+  type,
+  transaction_date
+)
 SELECT
   u.id,
   t.name,
-  t.transaction_date,
   t.amount,
   t.description,
-  t.type
+  t.type,
+  t.transaction_date
 FROM users u
 JOIN (
   VALUES
-    ('Salário', NOW(), 5000.00, 'Salário mensal', 'income'::transaction_type),
-    ('Aluguel', NOW(), 1200.00, 'Pagamento do aluguel', 'expense'::transaction_type),
-    ('Supermercado', NOW(), 950.75, 'Compras do mês', 'expense'::transaction_type),
-    ('Freelance', NOW(), 800.00, 'Projeto extra', 'income'::transaction_type),
-    ('Investimento CDB', NOW(), 1000.00, 'Aplicação mensal', 'investment'::transaction_type)
-) AS t(name, transaction_date, amount, description, type)
+    ('Salário', 5000.00, 'Salário mensal', 'income'::transaction_type, NOW()),
+    ('Aluguel', 1200.00, 'Pagamento aluguel', 'expense'::transaction_type, NOW()),
+    ('Supermercado', 850.50, 'Compras do mês', 'expense'::transaction_type, NOW()),
+    ('Freelance', 900.00, 'Projeto extra', 'income'::transaction_type, NOW()),
+    ('Investimento CDB', 1000.00, 'Aplicação mensal', 'investment'::transaction_type, NOW())
+) AS t(name, amount, description, type, transaction_date)
 ON TRUE;

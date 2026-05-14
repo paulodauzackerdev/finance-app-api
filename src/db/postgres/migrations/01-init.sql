@@ -1,15 +1,19 @@
--- extensão pra UUID
+-- =========================================
+-- EXTENSÕES
+-- =========================================
+
+-- UUID seguro
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- enum seguro
+
+-- =========================================
+-- ENUMS
+-- =========================================
+
 DO $$
 BEGIN
   IF NOT EXISTS (
-    SELECT 1 
-    FROM pg_type t
-    JOIN pg_namespace n ON n.oid = t.typnamespace
-    WHERE t.typname = 'transaction_type'
-    AND n.nspname = 'public'
+    SELECT 1 FROM pg_type WHERE typname = 'transaction_type'
   ) THEN
     CREATE TYPE transaction_type AS ENUM (
       'income',
@@ -20,30 +24,89 @@ BEGIN
 END
 $$;
 
--- tabela users
-CREATE TABLE IF NOT EXISTS users (
+
+-- =========================================
+-- TABELA: USERS
+-- =========================================
+
+CREATE TABLE users (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
   first_name VARCHAR(50) NOT NULL,
   last_name VARCHAR(50) NOT NULL,
-  email VARCHAR(100) NOT NULL UNIQUE,
-  password VARCHAR(100) NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+
+  email VARCHAR(150) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- tabela transactions
-CREATE TABLE IF NOT EXISTS transactions (
+
+-- =========================================
+-- TABELA: TRANSACTIONS
+-- =========================================
+
+CREATE TABLE transactions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+
+  user_id UUID NOT NULL
+    REFERENCES users(id)
+    ON DELETE CASCADE,
+
   name VARCHAR(100) NOT NULL,
-  transaction_date TIMESTAMP DEFAULT NOW(),
-  amount DECIMAL(10,2) NOT NULL CHECK (amount >= 0),
+
+  amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+
   description TEXT,
+
   type transaction_type NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
+
+  transaction_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- index
-CREATE INDEX IF NOT EXISTS idx_transactions_user_id 
+
+-- =========================================
+-- INDEXES (PERFORMANCE)
+-- =========================================
+
+CREATE INDEX idx_users_email ON users(email);
+
+CREATE INDEX idx_transactions_user_id 
 ON transactions(user_id);
+
+CREATE INDEX idx_transactions_type 
+ON transactions(type);
+
+CREATE INDEX idx_transactions_date 
+ON transactions(transaction_date);
+
+
+-- =========================================
+-- TRIGGER: AUTO UPDATE updated_at
+-- =========================================
+
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER set_users_updated_at
+BEFORE UPDATE ON users
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
+
+
+CREATE TRIGGER set_transactions_updated_at
+BEFORE UPDATE ON transactions
+FOR EACH ROW
+EXECUTE FUNCTION update_updated_at_column();
