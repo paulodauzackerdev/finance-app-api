@@ -26,6 +26,19 @@ export class CreateUserController {
           })
         }
       }
+
+      if (first_name.trim().length > 50) {
+        return res.status(400).json({
+          error: 'First name must have a maximum of 50 characters'
+        })
+      }
+
+      if (last_name.trim().length > 50) {
+        return res.status(400).json({
+          error: 'Last name must have a maximum of 50 characters'
+        })
+      }
+
       // normalizar email
       const normalizedEmail = email.trim().toLowerCase()
 
