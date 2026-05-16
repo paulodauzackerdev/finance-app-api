@@ -2,6 +2,7 @@ import express from 'express'
 import 'dotenv/config'
 import { CreateUserController } from './src/controllers/create-user.js'
 import { PostgresHelper } from './src/db/postgres/helper.js'
+import { GetUserByIdController } from './src/controllers/get-user-by-id.js'
 
 const app = express()
 
@@ -22,6 +23,16 @@ FROM users;`)
 
   return res.json(result)
 })
+
+const getUserByIdController = new GetUserByIdController()
+
+app.get('/api/users/:userId', (req, res) =>
+  getUserByIdController.handle(req, res)
+)
+
+app.get('/api/users/:userEmail', (req, res) =>
+  getUserByIdController.handle(req, res)
+)
 
 app.listen(process.env.PORT, () => {
   console.log(
