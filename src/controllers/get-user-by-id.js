@@ -1,6 +1,8 @@
 import { badRequest, internalServerError, notFound, ok } from './helper.js'
+
 import { GetUserByIdUseCase } from '../use-cases/get-user-by-id.js'
-import validator from 'validator'
+
+import { UserNotFoundError, InvalidUserIdError } from '../errors/user.js'
 
 export class GetUserByIdController {
   constructor() {
@@ -9,26 +11,21 @@ export class GetUserByIdController {
 
   async handle(req, res) {
     try {
-      const { userId } = req.params
+      const { id } = req.params
 
-      if (!userId || userId.trim().length === 0) {
-        return badRequest(res, 'Missing param: userId')
-      }
-
-      const isValid = validator.isUUID(userId)
-      if (!isValid) {
-        return badRequest(res, `Invalid UUID format: ${userId}`)
-      }
-
-      const user = await this.getUserByIdUseCase.execute(userId)
+      const user = await this.getUserByIdUseCase.execute(id)
 
       return ok(res, user)
     } catch (error) {
-      console.error(error)
+      if (error instanceof InvalidUserIdError) {
+        return badRequest(res, error.message)
+      }
 
-      if (error.message === 'User not found') {
+      if (error instanceof UserNotFoundError) {
         return notFound(res, error.message)
       }
+
+      console.error(error)
 
       return internalServerError(res)
     }

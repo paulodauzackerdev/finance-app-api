@@ -1,15 +1,16 @@
-import { GetUserByEmailRepository } from '../repositories/postgres/get-user-by-email.js'
+import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
+import { UserNotFoundError } from '../errors/user.js'
 
 export class GetUserByEmailUseCase {
   constructor() {
-    this.getUserByEmailRepository = new GetUserByEmailRepository()
+    this.userRepository = new UserRepository()
   }
 
   async execute(email) {
-    const user = await this.getUserByEmailRepository.findByEmail(email)
+    const user = await this.userRepository.findByEmail(email)
 
     if (!user) {
-      throw new Error('User not found')
+      throw new UserNotFoundError()
     }
 
     return user

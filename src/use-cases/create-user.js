@@ -1,5 +1,13 @@
 import bcrypt from 'bcrypt'
-import { UserRepository } from '../repositories/postgres/create-user.js'
+import validator from 'validator'
+import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
+import {
+  UserAlreadyExistsError,
+  InvalidNameError,
+  InvalidLastNameError,
+  InvalidEmailError,
+  WeakPasswordError
+} from '../errors/user.js'
 
 export class CreateUserUseCase {
   constructor() {
@@ -7,30 +15,68 @@ export class CreateUserUseCase {
   }
 
   async execute({ first_name, last_name, email, password }) {
-    first_name = first_name?.trim()
-    last_name = last_name?.trim()
-    email = email?.trim().toLowerCase()
-    password = password?.trim()
-
-    if (!first_name || !last_name || !email || !password) {
-      throw new Error('Todos os campos são obrigatórios')
+    if (typeof first_name !== 'string') {
+      throw new InvalidNameError('First name must be a string')
     }
 
-    const existingUser = await this.userRepository.findByEmail(email)
+    if (typeof last_name !== 'string') {
+      throw new InvalidLastNameError('Last name must be a string')
+    }
 
+    if (typeof email !== 'string') {
+      throw new InvalidEmailError('Email must be a string')
+    }
+    if (typeof password !== 'string') {
+      throw new WeakPasswordError('Password must be a string')
+    }
+
+    const firstName = first_name.trim()
+    const lastName = last_name.trim()
+    const normalizedEmail = email.trim().toLowerCase()
+    const trimmedPassword = password.trim()
+
+    if (!firstName) throw new InvalidNameError('First name is required')
+    if (!lastName) throw new InvalidLastNameError('Last name is required')
+    if (!normalizedEmail) throw new InvalidEmailError('Email is required')
+    if (!trimmedPassword) throw new WeakPasswordError('Password is required')
+
+    if (!validator.isLength(firstName, { min: 1, max: 50 })) {
+      throw new InvalidNameError(
+        'First name must have between 1 and 50 characters'
+      )
+    }
+
+    if (!validator.isLength(lastName, { min: 1, max: 50 })) {
+      throw new InvalidLastNameError(
+        'Last name must have between 1 and 50 characters'
+      )
+    }
+
+    if (!validator.isEmail(normalizedEmail)) {
+      throw new InvalidEmailError('Invalid email format')
+    }
+
+    if (!validator.isLength(trimmedPassword, { min: 6 })) {
+      throw new WeakPasswordError('Password must have at least 6 characters')
+    }
+
+    const existingUser = await this.userRepository.findByEmail(normalizedEmail)
     if (existingUser) {
-      throw new Error('Email já cadastrado')
+      throw new UserAlreadyExistsError()
     }
 
-    const password_hash = await bcrypt.hash(password, 10)
+    const password_hash = await bcrypt.hash(trimmedPassword, 10)
 
     const user = await this.userRepository.create({
-      first_name,
-      last_name,
-      email,
+      first_name: firstName,
+      last_name: lastName,
+      email: normalizedEmail,
       password_hash
     })
 
-    return user
+    const { password_hash: passwordHash, ...userWithoutPassword } = user
+
+    void passwordHash
+    return userWithoutPassword
   }
 }

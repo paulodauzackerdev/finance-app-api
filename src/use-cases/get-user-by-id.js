@@ -1,15 +1,23 @@
-import { GetUserByIdRepository } from '../repositories/postgres/get-user-by-id.js'
+import validator from 'validator'
+
+import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
+
+import { UserNotFoundError, InvalidUserIdError } from '../errors/user.js'
 
 export class GetUserByIdUseCase {
   constructor() {
-    this.getUserByIdRepository = new GetUserByIdRepository()
+    this.userRepository = new UserRepository()
   }
 
   async execute(userId) {
-    const user = await this.getUserByIdRepository.findById(userId)
+    if (!validator.isUUID(userId)) {
+      throw new InvalidUserIdError()
+    }
+
+    const user = await this.userRepository.findById(userId)
 
     if (!user) {
-      throw new Error('User not found')
+      throw new UserNotFoundError()
     }
 
     return user

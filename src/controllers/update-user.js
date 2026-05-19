@@ -1,8 +1,13 @@
-import { badRequest, conflict, created, internalServerError } from './helper.js'
-
-import { CreateUserUseCase } from '../use-cases/create-user.js'
-
 import {
+  badRequest,
+  notFound,
+  conflict,
+  ok,
+  internalServerError
+} from './helper.js'
+import { UpdateUserUseCase } from '../use-cases/update-user.js'
+import {
+  UserNotFoundError,
   UserAlreadyExistsError,
   InvalidNameError,
   InvalidLastNameError,
@@ -10,17 +15,22 @@ import {
   WeakPasswordError
 } from '../errors/user.js'
 
-export class CreateUserController {
+export class UpdateUserController {
   constructor() {
-    this.createUserUseCase = new CreateUserUseCase()
+    this.updateUserUseCase = new UpdateUserUseCase()
   }
 
   async handle(req, res) {
     try {
-      const user = await this.createUserUseCase.execute(req.body)
+      const { id } = req.params
+      const user = await this.updateUserUseCase.execute(id, req.body)
 
-      return created(res, user)
+      return ok(res, user)
     } catch (error) {
+      if (error instanceof UserNotFoundError) {
+        return notFound(res, error.message)
+      }
+
       if (error instanceof UserAlreadyExistsError) {
         return conflict(res, error.message)
       }
@@ -35,7 +45,6 @@ export class CreateUserController {
       }
 
       console.error(error)
-
       return internalServerError(res)
     }
   }

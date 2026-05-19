@@ -1,6 +1,6 @@
-import { badRequest, internalServerError, notFound, ok } from './helper.js'
+import { internalServerError, notFound, ok } from './helper.js'
 import { GetUserByEmailUseCase } from '../use-cases/get-user-by-email.js'
-import validator from 'validator'
+import { UserNotFoundError } from '../errors/user.js'
 
 export class GetUserByEmailController {
   constructor() {
@@ -9,26 +9,17 @@ export class GetUserByEmailController {
 
   async handle(req, res) {
     try {
-      let { email } = req.params
-
-      if (!email || email.trim().length === 0) {
-        return badRequest(res, 'Missing param: email')
-      }
-
-      email = email.trim().toLowerCase()
-
-      if (!validator.isEmail(email)) {
-        return badRequest(res, 'Invalid email format')
-      }
+      const { email } = req.params
 
       const user = await this.getUserByEmailUseCase.execute(email)
+
       return ok(res, user)
     } catch (error) {
-      console.error(error)
-
-      if (error.message === 'User not found') {
+      if (error instanceof UserNotFoundError) {
         return notFound(res, error.message)
       }
+
+      console.error(error)
       return internalServerError(res)
     }
   }
