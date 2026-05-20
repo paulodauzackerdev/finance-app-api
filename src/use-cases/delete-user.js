@@ -2,6 +2,8 @@ import validator from 'validator'
 
 import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
 
+import { removePasswordFromUser } from '../helpers/user.js'
+
 import {
   UserNotFoundError,
   InvalidUserIdError,
@@ -34,10 +36,6 @@ export class DeleteUserUseCase {
       throw new UserNotFoundError()
     }
 
-    const { password_hash: passwordHash, ...userWithoutPassword } = deletedUser
-
-    void passwordHash
-
-    return userWithoutPassword
+    return removePasswordFromUser(deletedUser)
   }
 }

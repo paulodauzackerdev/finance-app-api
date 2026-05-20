@@ -4,8 +4,10 @@ import {
   conflict,
   ok,
   internalServerError
-} from './helper.js'
+} from '../helpers/http.js'
+
 import { UpdateUserUseCase } from '../use-cases/update-user.js'
+
 import {
   UserNotFoundError,
   UserAlreadyExistsError,

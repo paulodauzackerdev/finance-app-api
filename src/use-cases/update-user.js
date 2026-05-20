@@ -3,6 +3,8 @@ import validator from 'validator'
 
 import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
 
+import { removePasswordFromUser, normalizeEmail } from '../helpers/user.js'
+
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
@@ -73,7 +75,7 @@ export class UpdateUserUseCase {
         throw new InvalidEmailError('Email must be a string')
       }
 
-      const normalizedEmail = updateParams.email.trim().toLowerCase()
+      const normalizedEmail = normalizeEmail(updateParams.email)
 
       if (!normalizedEmail) {
         throw new InvalidEmailError('Email is required')
@@ -125,18 +127,11 @@ export class UpdateUserUseCase {
     }
 
     if (Object.keys(allowedUpdates).length === 0) {
-      const { password_hash: passwordHash, ...userWithoutPassword } =
-        existingUser
-
-      void passwordHash
-      return userWithoutPassword
+      return removePasswordFromUser(existingUser)
     }
 
     const updatedUser = await this.userRepository.update(userId, allowedUpdates)
 
-    const { password_hash: passwordHash, ...userWithoutPassword } = updatedUser
-
-    void passwordHash
-    return userWithoutPassword
+    return removePasswordFromUser(updatedUser)
   }
 }

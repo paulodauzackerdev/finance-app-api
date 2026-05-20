@@ -1,6 +1,9 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
+
+import { removePasswordFromUser, normalizeEmail } from '../helpers/user.js'
+
 import {
   UserAlreadyExistsError,
   InvalidNameError,
@@ -32,7 +35,9 @@ export class CreateUserUseCase {
 
     const firstName = first_name.trim()
     const lastName = last_name.trim()
-    const normalizedEmail = email.trim().toLowerCase()
+
+    const normalizedEmail = normalizeEmail(email)
+
     const trimmedPassword = password.trim()
 
     if (!firstName) throw new InvalidNameError('First name is required')
@@ -74,9 +79,6 @@ export class CreateUserUseCase {
       password_hash
     })
 
-    const { password_hash: passwordHash, ...userWithoutPassword } = user
-
-    void passwordHash
-    return userWithoutPassword
+    return removePasswordFromUser(user)
   }
 }

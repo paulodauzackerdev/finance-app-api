@@ -1,4 +1,4 @@
-import { internalServerError, notFound, ok } from './helper.js'
+import { internalServerError, notFound, ok } from '../helpers/http.js'
 import { GetUserByEmailUseCase } from '../use-cases/get-user-by-email.js'
 import { UserNotFoundError } from '../errors/user.js'
 

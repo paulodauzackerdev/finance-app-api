@@ -1,4 +1,4 @@
-import { internalServerError, ok } from './helper.js'
+import { internalServerError, ok } from '../helpers/http.js'
 import { GetAllUsersUseCase } from '../use-cases/get-all-users.js'
 
 export class GetAllUsersController {

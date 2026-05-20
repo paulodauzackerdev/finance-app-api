@@ -4,7 +4,7 @@ import {
   internalServerError,
   notFound,
   ok
-} from './helper.js'
+} from '../helpers/http.js'
 
 import { DeleteUserUseCase } from '../use-cases/delete-user.js'
 
