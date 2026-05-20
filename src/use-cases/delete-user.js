@@ -26,7 +26,7 @@ export class DeleteUserUseCase {
       throw new UserNotFoundError()
     }
 
-    if (existingUser.email === 'admin@email.com') {
+    if (existingUser.id === process.env.ADMIN_USER_ID) {
       throw new ForbiddenUserDeletionError()
     }
 
