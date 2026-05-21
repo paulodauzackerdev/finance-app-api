@@ -1,6 +1,5 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
-import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
 
 import { removePasswordFromUser, normalizeEmail } from '../helpers/user.js'
 
@@ -13,8 +12,8 @@ import {
 } from '../errors/user.js'
 
 export class CreateUserUseCase {
-  constructor() {
-    this.userRepository = new UserRepository()
+  constructor(userRepository) {
+    this.userRepository = userRepository
   }
 
   async execute({ first_name, last_name, email, password }) {

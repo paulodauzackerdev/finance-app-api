@@ -6,20 +6,20 @@ import {
   internalServerError
 } from '../helpers/http.js'
 
-import { UpdateUserUseCase } from '../use-cases/update-user.js'
-
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
   InvalidNameError,
   InvalidLastNameError,
   InvalidEmailError,
-  WeakPasswordError
+  WeakPasswordError,
+  InvalidUserIdError,
+  InvalidIsActiveError
 } from '../errors/user.js'
 
 export class UpdateUserController {
-  constructor() {
-    this.updateUserUseCase = new UpdateUserUseCase()
+  constructor(updateUserUseCase) {
+    this.updateUserUseCase = updateUserUseCase
   }
 
   async handle(req, res) {
@@ -36,12 +36,13 @@ export class UpdateUserController {
       if (error instanceof UserAlreadyExistsError) {
         return conflict(res, error.message)
       }
-
       if (
         error instanceof InvalidNameError ||
         error instanceof InvalidLastNameError ||
         error instanceof InvalidEmailError ||
-        error instanceof WeakPasswordError
+        error instanceof WeakPasswordError ||
+        error instanceof InvalidIsActiveError ||
+        error instanceof InvalidUserIdError
       ) {
         return badRequest(res, error.message)
       }

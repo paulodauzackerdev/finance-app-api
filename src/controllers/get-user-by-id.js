@@ -5,13 +5,11 @@ import {
   ok
 } from '../helpers/http.js'
 
-import { GetUserByIdUseCase } from '../use-cases/get-user-by-id.js'
-
 import { UserNotFoundError, InvalidUserIdError } from '../errors/user.js'
 
 export class GetUserByIdController {
-  constructor() {
-    this.getUserByIdUseCase = new GetUserByIdUseCase()
+  constructor(getUserByIdUseCase) {
+    this.getUserByIdUseCase = getUserByIdUseCase
   }
 
   async handle(req, res) {

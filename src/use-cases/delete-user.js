@@ -1,7 +1,5 @@
 import validator from 'validator'
 
-import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
-
 import { removePasswordFromUser } from '../helpers/user.js'
 
 import {
@@ -11,8 +9,8 @@ import {
 } from '../errors/user.js'
 
 export class DeleteUserUseCase {
-  constructor() {
-    this.userRepository = new UserRepository()
+  constructor(userRepository) {
+    this.userRepository = userRepository
   }
 
   async execute(userId) {

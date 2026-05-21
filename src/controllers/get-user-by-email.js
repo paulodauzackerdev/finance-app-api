@@ -1,10 +1,15 @@
-import { internalServerError, notFound, ok } from '../helpers/http.js'
-import { GetUserByEmailUseCase } from '../use-cases/get-user-by-email.js'
-import { UserNotFoundError } from '../errors/user.js'
+import {
+  badRequest,
+  internalServerError,
+  notFound,
+  ok
+} from '../helpers/http.js'
+
+import { UserNotFoundError, InvalidEmailError } from '../errors/user.js'
 
 export class GetUserByEmailController {
-  constructor() {
-    this.getUserByEmailUseCase = new GetUserByEmailUseCase()
+  constructor(getUserByEmailUseCase) {
+    this.getUserByEmailUseCase = getUserByEmailUseCase
   }
 
   async handle(req, res) {
@@ -15,6 +20,9 @@ export class GetUserByEmailController {
 
       return ok(res, user)
     } catch (error) {
+      if (error instanceof InvalidEmailError) {
+        return badRequest(res, error.message)
+      }
       if (error instanceof UserNotFoundError) {
         return notFound(res, error.message)
       }

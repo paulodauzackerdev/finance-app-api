@@ -1,8 +1,6 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 
-import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
-
 import { removePasswordFromUser, normalizeEmail } from '../helpers/user.js'
 
 import {
@@ -12,16 +10,21 @@ import {
   InvalidLastNameError,
   InvalidEmailError,
   WeakPasswordError,
-  InvalidIsActiveError
+  InvalidIsActiveError,
+  InvalidUserIdError
 } from '../errors/user.js'
-
 export class UpdateUserUseCase {
-  constructor() {
-    this.userRepository = new UserRepository()
+  constructor(userRepository) {
+    this.userRepository = userRepository
   }
 
   async execute(userId, updateParams) {
+    if (!validator.isUUID(userId)) {
+      throw new InvalidUserIdError()
+    }
+
     const existingUser = await this.userRepository.findById(userId)
+
     if (!existingUser) {
       throw new UserNotFoundError()
     }

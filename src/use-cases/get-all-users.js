@@ -1,11 +1,13 @@
-import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
+import { removePasswordFromUser } from '../helpers/user.js'
 
 export class GetAllUsersUseCase {
-  constructor() {
-    this.userRepository = new UserRepository()
+  constructor(userRepository) {
+    this.userRepository = userRepository
   }
 
   async execute() {
-    return await this.userRepository.findAll()
+    const users = await this.userRepository.findAll()
+
+    return users.map(removePasswordFromUser)
   }
 }

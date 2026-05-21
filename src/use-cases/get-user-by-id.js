@@ -1,12 +1,12 @@
 import validator from 'validator'
 
-import { UserRepository } from '../repositories/postgres/postgres-user-repository.js'
-
 import { UserNotFoundError, InvalidUserIdError } from '../errors/user.js'
 
+import { removePasswordFromUser } from '../helpers/user.js'
+
 export class GetUserByIdUseCase {
-  constructor() {
-    this.userRepository = new UserRepository()
+  constructor(userRepository) {
+    this.userRepository = userRepository
   }
 
   async execute(userId) {
@@ -20,6 +20,6 @@ export class GetUserByIdUseCase {
       throw new UserNotFoundError()
     }
 
-    return user
+    return removePasswordFromUser(user)
   }
 }

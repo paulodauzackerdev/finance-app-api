@@ -6,8 +6,6 @@ import {
   ok
 } from '../helpers/http.js'
 
-import { DeleteUserUseCase } from '../use-cases/delete-user.js'
-
 import {
   UserNotFoundError,
   InvalidUserIdError,
@@ -15,8 +13,8 @@ import {
 } from '../errors/user.js'
 
 export class DeleteUserController {
-  constructor() {
-    this.deleteUserUseCase = new DeleteUserUseCase()
+  constructor(deleteUserUseCase) {
+    this.deleteUserUseCase = deleteUserUseCase
   }
 
   async handle(req, res) {

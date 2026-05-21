@@ -1,9 +1,7 @@
 import { internalServerError, ok } from '../helpers/http.js'
-import { GetAllUsersUseCase } from '../use-cases/get-all-users.js'
-
 export class GetAllUsersController {
-  constructor() {
-    this.getAllUsersUseCase = new GetAllUsersUseCase()
+  constructor(getAllUsersUseCase) {
+    this.getAllUsersUseCase = getAllUsersUseCase
   }
 
   async handle(req, res) {

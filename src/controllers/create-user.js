@@ -5,8 +5,6 @@ import {
   internalServerError
 } from '../helpers/http.js'
 
-import { CreateUserUseCase } from '../use-cases/create-user.js'
-
 import {
   UserAlreadyExistsError,
   InvalidNameError,
@@ -16,8 +14,8 @@ import {
 } from '../errors/user.js'
 
 export class CreateUserController {
-  constructor() {
-    this.createUserUseCase = new CreateUserUseCase()
+  constructor(createUserUseCase) {
+    this.createUserUseCase = createUserUseCase
   }
 
   async handle(req, res) {
