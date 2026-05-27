@@ -1,54 +1,15 @@
-import {
-  badRequest,
-  notFound,
-  conflict,
-  ok,
-  internalServerError
-} from '../helpers/http.js'
-
-import {
-  UserNotFoundError,
-  UserAlreadyExistsError,
-  InvalidNameError,
-  InvalidLastNameError,
-  InvalidEmailError,
-  WeakPasswordError,
-  InvalidUserIdError,
-  InvalidIsActiveError
-} from '../errors/user.js'
+import { ok } from '../helpers/http.js'
 
 export class UpdateUserController {
   constructor(updateUserUseCase) {
     this.updateUserUseCase = updateUserUseCase
   }
 
-  async handle(req, res) {
-    try {
-      const { id } = req.params
-      const user = await this.updateUserUseCase.execute(id, req.body)
+  handle = async (req, res) => {
+    const { id } = req.params
 
-      return ok(res, user)
-    } catch (error) {
-      if (error instanceof UserNotFoundError) {
-        return notFound(res, error.message)
-      }
+    const user = await this.updateUserUseCase.execute(id, req.body)
 
-      if (error instanceof UserAlreadyExistsError) {
-        return conflict(res, error.message)
-      }
-      if (
-        error instanceof InvalidNameError ||
-        error instanceof InvalidLastNameError ||
-        error instanceof InvalidEmailError ||
-        error instanceof WeakPasswordError ||
-        error instanceof InvalidIsActiveError ||
-        error instanceof InvalidUserIdError
-      ) {
-        return badRequest(res, error.message)
-      }
-
-      console.error(error)
-      return internalServerError(res)
-    }
+    return ok(res, user)
   }
 }
