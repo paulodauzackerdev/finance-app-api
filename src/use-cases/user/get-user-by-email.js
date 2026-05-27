@@ -1,8 +1,8 @@
 import validator from 'validator'
 
-import { removePasswordFromUser } from '../helpers/user.js'
+import { removePasswordFromUser } from '../../helpers/user.js'
 
-import { UserNotFoundError, InvalidEmailError } from '../errors/user.js'
+import { UserNotFoundError, InvalidEmailError } from '../../errors/user.js'
 
 export class GetUserByEmailUseCase {
   constructor(userRepository) {

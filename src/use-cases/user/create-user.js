@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt'
 import validator from 'validator'
 
-import { removePasswordFromUser, normalizeEmail } from '../helpers/user.js'
+import { removePasswordFromUser, normalizeEmail } from '../../helpers/user.js'
 
 import {
   UserAlreadyExistsError,
@@ -9,7 +9,7 @@ import {
   InvalidLastNameError,
   InvalidEmailError,
   WeakPasswordError
-} from '../errors/user.js'
+} from '../../errors/user.js'
 
 export class CreateUserUseCase {
   constructor(userRepository) {

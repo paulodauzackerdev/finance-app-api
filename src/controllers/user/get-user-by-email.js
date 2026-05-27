@@ -1,4 +1,4 @@
-import { ok } from '../helpers/http.js'
+import { ok } from '../../helpers/http.js'
 
 export class GetUserByEmailController {
   constructor(getUserByEmailUseCase) {

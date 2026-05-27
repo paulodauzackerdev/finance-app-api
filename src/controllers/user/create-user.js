@@ -1,4 +1,4 @@
-import { created } from '../helpers/http.js'
+import { created } from '../../helpers/http.js'
 
 export class CreateUserController {
   constructor(createUserUseCase) {

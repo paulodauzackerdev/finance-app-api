@@ -1,12 +1,12 @@
 import validator from 'validator'
 
-import { removePasswordFromUser } from '../helpers/user.js'
+import { removePasswordFromUser } from '../../helpers/user.js'
 
 import {
   UserNotFoundError,
   InvalidUserIdError,
   ForbiddenUserDeletionError
-} from '../errors/user.js'
+} from '../../errors/user.js'
 
 export class DeleteUserUseCase {
   constructor(userRepository) {

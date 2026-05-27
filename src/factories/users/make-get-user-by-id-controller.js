@@ -1,5 +1,5 @@
-import { GetUserByIdController } from '../../controllers/get-user-by-id.js'
-import { GetUserByIdUseCase } from '../../use-cases/get-user-by-id.js'
+import { GetUserByIdController } from '../../controllers/user/get-user-by-id.js'
+import { GetUserByIdUseCase } from '../../use-cases/user/get-user-by-id.js'
 
 import { makeUserRepository } from '../repositories/user-repository-factory.js'
 

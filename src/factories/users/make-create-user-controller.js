@@ -1,5 +1,5 @@
-import { CreateUserController } from '../../controllers/create-user.js'
-import { CreateUserUseCase } from '../../use-cases/create-user.js'
+import { CreateUserController } from '../../controllers/user/create-user.js'
+import { CreateUserUseCase } from '../../use-cases/user/create-user.js'
 
 import { makeUserRepository } from '../repositories/user-repository-factory.js'
 

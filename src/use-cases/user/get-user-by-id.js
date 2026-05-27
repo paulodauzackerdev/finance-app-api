@@ -1,8 +1,8 @@
 import validator from 'validator'
 
-import { UserNotFoundError, InvalidUserIdError } from '../errors/user.js'
+import { UserNotFoundError, InvalidUserIdError } from '../../errors/user.js'
 
-import { removePasswordFromUser } from '../helpers/user.js'
+import { removePasswordFromUser } from '../../helpers/user.js'
 
 export class GetUserByIdUseCase {
   constructor(userRepository) {

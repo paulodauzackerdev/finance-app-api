@@ -1,4 +1,4 @@
-import { removePasswordFromUser } from '../helpers/user.js'
+import { removePasswordFromUser } from '../../helpers/user.js'
 
 export class GetAllUsersUseCase {
   constructor(userRepository) {
