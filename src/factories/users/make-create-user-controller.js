@@ -1,7 +1,7 @@
-import { CreateUserController } from '../../controllers/user/create-user.js'
-import { CreateUserUseCase } from '../../use-cases/user/create-user.js'
+import { CreateUserController } from '../../controllers/user/create-user-controller.js'
+import { CreateUserUseCase } from '../../use-cases/user/create-user-use-case.js'
 
-import { makeUserRepository } from '../repositories/user-repository-factory.js'
+import { makeUserRepository } from '../repositories/make-user-repository.js'
 
 export const makeCreateUserController = () => {
   const userRepository = makeUserRepository()

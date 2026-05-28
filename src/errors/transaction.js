@@ -6,7 +6,7 @@ export class InvalidTransactionNameError extends Error {
 }
 
 export class InvalidTransactionAmountError extends Error {
-  constructor(message = 'Invalid transaction amout') {
+  constructor(message = 'Invalid transaction amount') {
     super(message)
     this.name = 'InvalidTransactionAmountError'
   }

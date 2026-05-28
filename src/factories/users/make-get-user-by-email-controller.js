@@ -1,7 +1,7 @@
-import { GetUserByEmailController } from '../../controllers/user/get-user-by-email.js'
-import { GetUserByEmailUseCase } from '../../use-cases/user/get-user-by-email.js'
+import { GetUserByEmailController } from '../../controllers/user/get-user-by-email-controller.js'
+import { GetUserByEmailUseCase } from '../../use-cases/user/get-user-by-email-use-case.js'
 
-import { makeUserRepository } from '../repositories/user-repository-factory.js'
+import { makeUserRepository } from '../repositories/make-user-repository.js'
 
 export const makeGetUserByEmailController = () => {
   const userRepository = makeUserRepository()

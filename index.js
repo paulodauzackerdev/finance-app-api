@@ -2,6 +2,7 @@ import express from 'express'
 import 'dotenv/config'
 
 import { usersRoutes } from './src/routes/users-routes.js'
+import { transactionsRoutes } from './src/routes/transactions-routes.js'
 import { errorHandler } from './src/middlewares/error-handler.js'
 
 const app = express()
@@ -9,6 +10,8 @@ const app = express()
 app.use(express.json())
 
 app.use('/api/users', usersRoutes)
+
+app.use('/api/transactions', transactionsRoutes)
 
 app.use(errorHandler)
 

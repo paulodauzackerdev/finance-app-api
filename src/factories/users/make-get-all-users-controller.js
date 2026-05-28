@@ -1,7 +1,7 @@
-import { GetAllUsersController } from '../../controllers/user/get-all-users.js'
-import { GetAllUsersUseCase } from '../../use-cases/user/get-all-users.js'
+import { GetAllUsersController } from '../../controllers/user/get-all-users-controller.js'
+import { GetAllUsersUseCase } from '../../use-cases/user/get-all-users-use-case.js'
 
-import { makeUserRepository } from '../repositories/user-repository-factory.js'
+import { makeUserRepository } from '../repositories/make-user-repository.js'
 
 export const makeGetAllUsersController = () => {
   const userRepository = makeUserRepository()
