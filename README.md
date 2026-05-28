@@ -1,162 +1,177 @@
 # Finance App API
 
-API RESTful desenvolvida com Node.js, Express e PostgreSQL, focada em boas práticas de arquitetura backend, validações robustas e organização de código escalável.
+REST API for personal financial management built with **Node.js**, **Express**, **PostgreSQL**, and **Clean Architecture** principles.
 
-## 🚀 Tecnologias
+This project was created to study and apply backend engineering concepts such as:
+
+- Clean Architecture
+- SOLID principles
+- Dependency Injection (DI)
+- Repository Pattern
+- Error Handling
+- RESTful APIs
+- PostgreSQL integration
+- Scalable folder organization
+
+---
+
+# Technologies
 
 - Node.js
-- Express
+- Express.js
 - PostgreSQL
-- bcrypt
-- validator
-- ESLint
-- Prettier
-- Husky
-- lint-staged
+- JavaScript (ES Modules)
+- Validator.js
+- Bcrypt
+- Dotenv
 
 ---
 
-# 📁 Arquitetura
+# Architectural Concepts
 
-O projeto segue separação de responsabilidades em camadas:
+This project applies several software engineering concepts:
 
-```bash
-src/
-├── controllers/
-├── use-cases/
-├── repositories/
-├── db/
-├── routes/
-├── errors/
+## Clean Architecture
+
+The application is separated into layers:
+
+```txt
+controllers/
+use-cases/
+repositories/
+factories/
+middlewares/
+errors/
+helpers/
 ```
 
-## Camadas
-
-### Controllers
-
-Responsáveis por:
-
-- receber requisições HTTP
-- retornar respostas HTTP
-- tratar erros específicos
-
-### Use Cases
-
-Responsáveis pelas regras de negócio:
-
-- validações
-- normalização de dados
-- verificações de domínio
-- hashing de senha
-
-### Repositories
-
-Responsáveis exclusivamente pelo acesso ao banco de dados.
+Each layer has a single responsibility.
 
 ---
 
-# ✅ Funcionalidades
+## SOLID Principles
 
-## Usuários
+### Single Responsibility Principle (SRP)
 
-### Criar usuário
+Each class has only one responsibility.
 
-`POST /api/users`
+Example:
 
-### Buscar usuário por ID
-
-`GET /api/users/:id`
-
-### Buscar usuário por email
-
-`GET /api/users/email/:email`
-
-### Listar usuários
-
-`GET /api/users`
-
-### Atualizar usuário
-
-`PATCH /api/users/:id`
-
-### Deletar usuário
-
-`DELETE /api/users/:id`
+- Controllers handle HTTP requests
+- Use cases contain business logic
+- Repositories handle database access
 
 ---
 
-# 🔒 Validações implementadas
+### Dependency Inversion Principle (DIP)
 
-- UUID válido
-- nome obrigatório
-- sobrenome obrigatório
-- email válido
-- senha mínima
-- email duplicado
-- tipos primitivos corretos
-- proteção contra deleção de usuário admin
+Use cases depend on abstractions instead of concrete implementations.
+
+Repositories are injected through factories.
 
 ---
 
-# ⚠️ Tratamento de erros customizados
+## Dependency Injection (DI)
 
-O projeto possui classes específicas de erro:
+Repositories are injected into use cases, allowing easy replacement between:
 
-- `UserNotFoundError`
-- `UserAlreadyExistsError`
-- `InvalidNameError`
-- `InvalidLastNameError`
-- `InvalidEmailError`
-- `WeakPasswordError`
-- `InvalidUserIdError`
-- `InvalidIsActiveError`
-- `ForbiddenUserDeletionError`
+- PostgreSQL
+- MongoDB
+- Fake repositories
+- Future ORM implementations
 
 ---
 
-# 🔐 Segurança
+# Features
 
-- Senhas são criptografadas com bcrypt
-- Dados sensíveis não são retornados na API
-- Validações de entrada em todos os endpoints
+## Users
 
----
-
-# 🧹 Padronização de código
-
-O projeto utiliza:
-
-- ESLint
-- Prettier
-- Husky
-- lint-staged
-
-Garantindo:
-
-- padrão de código consistente
-- commits mais seguros
-- qualidade automática no pre-commit
+- Create user
+- Get all users
+- Get user by ID
+- Get user by email
+- Update user
+- Delete user
 
 ---
 
-# ▶️ Como rodar o projeto
+## Transactions
 
-## Instalar dependências
+- Create transaction
+- Transaction validation
+- User ownership validation
+- Financial amount validation
+- PostgreSQL persistence
+
+---
+
+# Project Structure
+
+```txt
+src/
+├── controllers/
+│   ├── users/
+│   └── transactions/
+│
+├── use-cases/
+│   ├── users/
+│   └── transactions/
+│
+├── repositories/
+│   ├── postgres/
+│   └── fake/
+│
+├── factories/
+│   ├── users/
+│   ├── transactions/
+│   └── repositories/
+│
+├── middlewares/
+├── helpers/
+├── errors/
+├── routes/
+└── db/
+```
+
+---
+
+# Installation
+
+## Clone repository
+
+```bash
+git clone https://github.com/paulodauzackerdev/finance-app-api.git
+```
+
+---
+
+## Install dependencies
 
 ```bash
 npm install
 ```
 
-## Configurar variáveis ambiente
+---
 
-Crie um arquivo `.env`
+# Environment Variables
+
+Create a `.env` file:
 
 ```env
 PORT=8000
-DATABASE_URL=postgresql://user:password@localhost:5432/database
+
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your_password
+POSTGRES_DB=finance_app
 ```
 
-## Rodar projeto
+---
+
+# Running the project
+
+## Development mode
 
 ```bash
 npm run start:dev
@@ -164,13 +179,152 @@ npm run start:dev
 
 ---
 
-# 📌 Objetivo
+# Database Migration
 
-Este projeto faz parte da minha jornada de aprendizado como desenvolvedor backend JavaScript, com foco em:
+Run your PostgreSQL migration script to create:
 
-- arquitetura limpa
-- boas práticas
-- APIs RESTful
-- escalabilidade
-- código consistente
-- preparação para mercado backend júnior
+- users table
+- transactions table
+- indexes
+- triggers
+- enums
+
+---
+
+# API Endpoints
+
+# Users
+
+## Create user
+
+```http
+POST /api/users
+```
+
+Body:
+
+```json
+{
+  "first_name": "Paulo",
+  "last_name": "Dauzacker",
+  "email": "paulo@email.com",
+  "password": "123456"
+}
+```
+
+---
+
+## Get all users
+
+```http
+GET /api/users
+```
+
+---
+
+## Get user by ID
+
+```http
+GET /api/users/:id
+```
+
+---
+
+## Update user
+
+```http
+PATCH /api/users/:id
+```
+
+---
+
+## Delete user
+
+```http
+DELETE /api/users/:id
+```
+
+---
+
+# Transactions
+
+## Create transaction
+
+```http
+POST /api/transactions
+```
+
+Body:
+
+```json
+{
+  "user_id": "USER_UUID",
+  "name": "Salary",
+  "amount": 3500.5,
+  "description": "Monthly salary",
+  "type": "income",
+  "transaction_date": "2026-05-27T15:30:00.000Z"
+}
+```
+
+---
+
+# Error Handling
+
+The API uses centralized error handling middleware.
+
+Examples:
+
+- Invalid email
+- Invalid UUID
+- Weak password
+- Transaction validation errors
+- Unauthorized access
+- Resource not found
+
+---
+
+# Financial Amount Validation
+
+Transactions support:
+
+- positive values only
+- max 2 decimal places
+- finite numbers only
+
+Examples:
+
+```js
+100
+99.9
+3500.5
+```
+
+---
+
+# Future Improvements
+
+- JWT Authentication
+- Refresh Tokens
+- Docker
+- Automated Tests
+- Pagination
+- Filters
+- Dashboard endpoints
+- CI/CD
+- Swagger Documentation
+
+---
+
+# Author
+
+Paulo Dauzacker
+
+GitHub:
+https://github.com/paulodauzackerdev
+
+---
+
+# License
+
+This project is licensed under the MIT License.
