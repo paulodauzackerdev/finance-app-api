@@ -15,33 +15,64 @@ import {
   WeakPasswordError,
   InvalidUserIdError,
   InvalidIsActiveError,
-  ForbiddenUserDeletionError
+  ForbiddenUserDeletionError,
+  MissingUserFieldsError
 } from '../errors/user.js'
 
+import {
+  InvalidTransactionNameError,
+  InvalidTransactionAmountError,
+  InvalidTransactionTypeError,
+  InvalidTransactionDateError,
+  InvalidTransactionDescriptionError,
+  TransactionNotFoundError,
+  TransactionUnauthorizedError
+} from '../errors/transaction.js'
+
 export const errorHandler = (error, req, res, _next) => {
-  if (error instanceof UserNotFoundError) {
+  console.error(`[${new Date().toISOString()}] ${error.name}: ${error.message}`)
+  console.error(`  Path: ${req.method} ${req.path}`)
+
+  // 404
+  if (
+    error instanceof UserNotFoundError ||
+    error instanceof TransactionNotFoundError
+  ) {
     return notFound(res, error.message)
   }
 
+  // 403
+  if (
+    error instanceof ForbiddenUserDeletionError ||
+    error instanceof TransactionUnauthorizedError
+  ) {
+    return forbidden(res, error.message)
+  }
+
+  // 409
   if (error instanceof UserAlreadyExistsError) {
     return conflict(res, error.message)
   }
 
+  // 400
   if (
+    error instanceof MissingUserFieldsError ||
     error instanceof InvalidNameError ||
     error instanceof InvalidLastNameError ||
     error instanceof InvalidEmailError ||
     error instanceof WeakPasswordError ||
     error instanceof InvalidUserIdError ||
-    error instanceof InvalidIsActiveError
+    error instanceof InvalidIsActiveError ||
+    error instanceof InvalidTransactionNameError ||
+    error instanceof InvalidTransactionAmountError ||
+    error instanceof InvalidTransactionTypeError ||
+    error instanceof InvalidTransactionDateError ||
+    error instanceof InvalidTransactionDescriptionError
   ) {
     return badRequest(res, error.message)
   }
 
-  if (error instanceof ForbiddenUserDeletionError) {
-    return forbidden(res, error.message)
-  }
-
+  // 500
   console.error(error)
 
   return internalServerError(res)
