@@ -20,6 +20,7 @@ import {
 } from '../errors/user.js'
 
 import {
+  InvalidTransactionIdError,
   InvalidTransactionNameError,
   InvalidTransactionAmountError,
   InvalidTransactionTypeError,
@@ -63,6 +64,7 @@ export const errorHandler = (error, req, res, _next) => {
     error instanceof WeakPasswordError ||
     error instanceof InvalidUserIdError ||
     error instanceof InvalidIsActiveError ||
+    error instanceof InvalidTransactionIdError ||
     error instanceof InvalidTransactionNameError ||
     error instanceof InvalidTransactionAmountError ||
     error instanceof InvalidTransactionTypeError ||

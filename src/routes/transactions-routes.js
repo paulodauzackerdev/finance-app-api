@@ -1,15 +1,16 @@
 import { Router } from 'express'
 
 import { makeCreateTransactionController } from '../factories/transactions/make-create-transaction-controller.js'
-import { makeGetAllTransactionsController } from '../factories/transactions/make-get-all-transactions-controller.js'
+import { makeGetTransactionsByUserIdController } from '../factories/transactions/make-get-transactions-by-user-id-controller.js'
 
 const transactionsRoutes = Router()
 
 const createTransactionController = makeCreateTransactionController()
-const getAllTransactionsController = makeGetAllTransactionsController()
+const getTransactionsByUserIdController =
+  makeGetTransactionsByUserIdController()
 
 transactionsRoutes.post('/', createTransactionController.handle)
 
-transactionsRoutes.get('/', getAllTransactionsController.handle)
+transactionsRoutes.get('/', getTransactionsByUserIdController.handle)
 
 export { transactionsRoutes }

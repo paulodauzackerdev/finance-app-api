@@ -1,3 +1,9 @@
+export class InvalidTransactionIdError extends Error {
+  constructor(message = 'Invalid transaction ID') {
+    super(message)
+    this.name = 'InvalidTransactionIdError'
+  }
+}
 export class InvalidTransactionNameError extends Error {
   constructor(message = 'Invalid transaction name') {
     super(message)
