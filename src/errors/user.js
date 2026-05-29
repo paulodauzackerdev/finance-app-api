@@ -61,13 +61,6 @@ export class UserNotFoundError extends Error {
   }
 }
 
-export class UsersNotFoundError extends Error {
-  constructor(message = 'Users not found') {
-    super(message)
-    this.name = 'UsersNotFoundError'
-  }
-}
-
 export class ForbiddenUserDeletionError extends Error {
   constructor(message = 'Cannot delete this user') {
     super(message)
