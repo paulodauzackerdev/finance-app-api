@@ -55,21 +55,23 @@ export class CreateTransactionUseCase {
       )
     }
 
-    if (typeof amount !== 'number' || Number.isNaN(amount)) {
+    const parsedAmount = Number(amount)
+
+    if (Number.isNaN(parsedAmount)) {
       throw new InvalidTransactionAmountError('Amount must be a valid number')
     }
 
-    if (!Number.isFinite(amount)) {
+    if (!Number.isFinite(parsedAmount)) {
       throw new InvalidTransactionAmountError('Amount must be a finite number')
     }
 
-    if (amount <= 0) {
+    if (parsedAmount <= 0) {
       throw new InvalidTransactionAmountError(
         'Amount must be greater than zero'
       )
     }
 
-    const amountInCents = amount * 100
+    const amountInCents = Math.round(parsedAmount * 100)
 
     if (!Number.isInteger(amountInCents)) {
       throw new InvalidTransactionAmountError(
@@ -77,7 +79,7 @@ export class CreateTransactionUseCase {
       )
     }
 
-    const finalAmount = Number(amount.toFixed(2))
+    const finalAmount = Number(parsedAmount.toFixed(2))
 
     let normalizedDescription = null
 
@@ -97,7 +99,9 @@ export class CreateTransactionUseCase {
       throw new InvalidTransactionTypeError('Transaction type must be a string')
     }
 
-    if (!allowedTypes.includes(type)) {
+    const normalizedType = type.trim().toLowerCase()
+
+    if (!allowedTypes.includes(normalizedType)) {
       throw new InvalidTransactionTypeError(
         `Transaction type must be one of: ${allowedTypes.join(', ')}`
       )

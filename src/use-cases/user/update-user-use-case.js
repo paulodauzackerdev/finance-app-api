@@ -29,7 +29,7 @@ export class UpdateUserUseCase {
       throw new UserNotFoundError()
     }
 
-    const allowedUpdates = {}
+    const updatesToApply = {}
 
     if (updateParams.first_name !== undefined) {
       if (typeof updateParams.first_name !== 'string') {
@@ -47,7 +47,7 @@ export class UpdateUserUseCase {
       }
 
       if (firstName !== existingUser.first_name) {
-        allowedUpdates.first_name = firstName
+        updatesToApply.first_name = firstName
       }
     }
 
@@ -69,7 +69,7 @@ export class UpdateUserUseCase {
       }
 
       if (lastName !== existingUser.last_name) {
-        allowedUpdates.last_name = lastName
+        updatesToApply.last_name = lastName
       }
     }
 
@@ -92,11 +92,11 @@ export class UpdateUserUseCase {
         const emailAlreadyExists =
           await this.userRepository.findByEmail(normalizedEmail)
 
-        if (emailAlreadyExists) {
+        if (emailAlreadyExists && emailAlreadyExists.id !== existingUser.id) {
           throw new UserAlreadyExistsError()
         }
 
-        allowedUpdates.email = normalizedEmail
+        updatesToApply.email = normalizedEmail
       }
     }
 
@@ -116,7 +116,7 @@ export class UpdateUserUseCase {
       }
 
       const password_hash = await bcrypt.hash(password, 10)
-      allowedUpdates.password_hash = password_hash
+      updatesToApply.password_hash = password_hash
     }
 
     if (updateParams.is_active !== undefined) {
@@ -125,15 +125,15 @@ export class UpdateUserUseCase {
       }
 
       if (updateParams.is_active !== existingUser.is_active) {
-        allowedUpdates.is_active = updateParams.is_active
+        updatesToApply.is_active = updateParams.is_active
       }
     }
 
-    if (Object.keys(allowedUpdates).length === 0) {
+    if (Object.keys(updatesToApply).length === 0) {
       return removePasswordFromUser(existingUser)
     }
 
-    const updatedUser = await this.userRepository.update(userId, allowedUpdates)
+    const updatedUser = await this.userRepository.update(userId, updatesToApply)
 
     return removePasswordFromUser(updatedUser)
   }
