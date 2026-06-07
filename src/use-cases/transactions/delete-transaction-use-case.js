@@ -1,9 +1,5 @@
-import validator from 'validator'
-
-import {
-  InvalidTransactionIdError,
-  TransactionNotFoundError
-} from '../../errors/transaction.js'
+import { validateTransactionId } from '../../validators/transaction/index.js'
+import { TransactionNotFoundError } from '../../errors/transaction.js'
 
 export class DeleteTransactionUseCase {
   constructor(transactionRepository) {
@@ -11,19 +7,17 @@ export class DeleteTransactionUseCase {
   }
 
   async execute(transactionId) {
-    if (!validator.isUUID(transactionId)) {
-      throw new InvalidTransactionIdError()
-    }
+    const validatedId = validateTransactionId(transactionId)
 
     const existingTransaction =
-      await this.transactionRepository.findById(transactionId)
+      await this.transactionRepository.findById(validatedId)
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
     }
 
     const deletedTransaction =
-      await this.transactionRepository.delete(transactionId)
+      await this.transactionRepository.delete(validatedId)
 
     return deletedTransaction
   }

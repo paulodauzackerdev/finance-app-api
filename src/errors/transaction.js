@@ -52,3 +52,13 @@ export class TransactionUnauthorizedError extends Error {
     this.name = 'TransactionUnauthorizedError'
   }
 }
+export class InvalidTransactionFieldError extends Error {
+  constructor(invalidFields, allowedFields) {
+    super(
+      `Invalid update fields: ${invalidFields.join(', ')}. Allowed fields are: ${allowedFields.join(', ')}`
+    )
+    this.name = 'InvalidTransactionFieldError'
+    this.invalidFields = invalidFields
+    this.allowedFields = allowedFields
+  }
+}

@@ -1,16 +1,16 @@
-import validator from 'validator'
+import {
+  validateTransactionId,
+  validateTransactionName,
+  validateTransactionAmount,
+  validateTransactionType,
+  validateTransactionDate,
+  validateTransactionDescription
+} from '../../validators/transaction/index.js'
 
 import {
-  InvalidTransactionIdError,
-  InvalidTransactionNameError,
-  InvalidTransactionAmountError,
-  InvalidTransactionTypeError,
-  InvalidTransactionDateError,
-  InvalidTransactionDescriptionError,
-  TransactionNotFoundError
+  TransactionNotFoundError,
+  InvalidTransactionFieldError // ← importa o erro
 } from '../../errors/transaction.js'
-
-const ALLOWED_TRANSACTION_TYPES = ['income', 'expense', 'investment']
 
 const ALLOWED_UPDATE_FIELDS = [
   'name',
@@ -25,165 +25,87 @@ export class UpdateTransactionUseCase {
     this.transactionRepository = transactionRepository
   }
 
+  validateAllowedFields(updateParams) {
+    const invalidFields = Object.keys(updateParams).filter(
+      (field) => !ALLOWED_UPDATE_FIELDS.includes(field)
+    )
+
+    if (invalidFields.length > 0) {
+      throw new InvalidTransactionFieldError(
+        invalidFields,
+        ALLOWED_UPDATE_FIELDS
+      )
+    }
+  }
+
   async execute(transactionId, updateParams) {
-    if (!validator.isUUID(transactionId)) {
-      throw new InvalidTransactionIdError()
+    if (!updateParams || typeof updateParams !== 'object') {
+      throw new Error('Update parameters must be an object')
     }
 
+    this.validateAllowedFields(updateParams)
+
+    const validatedId = validateTransactionId(transactionId)
+
     const existingTransaction =
-      await this.transactionRepository.findById(transactionId)
+      await this.transactionRepository.findById(validatedId)
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
     }
 
-    const filteredUpdateParams = {}
+    const updatesToApply = {}
 
-    for (const key of Object.keys(updateParams)) {
-      if (ALLOWED_UPDATE_FIELDS.includes(key)) {
-        filteredUpdateParams[key] = updateParams[key]
+    if (updateParams.name !== undefined) {
+      const validatedName = validateTransactionName(updateParams.name)
+      if (validatedName !== existingTransaction.name) {
+        updatesToApply.name = validatedName
       }
     }
 
-    if (Object.keys(filteredUpdateParams).length === 0) {
-      return existingTransaction
-    }
-
-    const allowedUpdates = {}
-
-    if (filteredUpdateParams.name !== undefined) {
-      if (typeof filteredUpdateParams.name !== 'string') {
-        throw new InvalidTransactionNameError(
-          'Transaction name must be a string'
-        )
-      }
-
-      const trimmedName = filteredUpdateParams.name.trim()
-
-      if (!trimmedName) {
-        throw new InvalidTransactionNameError('Transaction name is required')
-      }
-
-      if (
-        !validator.isLength(trimmedName, {
-          min: 1,
-          max: 100
-        })
-      ) {
-        throw new InvalidTransactionNameError(
-          'Transaction name must have between 1 and 100 characters'
-        )
-      }
-
-      if (trimmedName !== existingTransaction.name) {
-        allowedUpdates.name = trimmedName
+    if (updateParams.amount !== undefined) {
+      const validatedAmount = validateTransactionAmount(updateParams.amount)
+      if (validatedAmount !== Number(existingTransaction.amount)) {
+        updatesToApply.amount = validatedAmount
       }
     }
 
-    if (filteredUpdateParams.amount !== undefined) {
-      const parsedAmount = Number(filteredUpdateParams.amount)
-
-      if (Number.isNaN(parsedAmount)) {
-        throw new InvalidTransactionAmountError('Amount must be a valid number')
-      }
-
-      if (!Number.isFinite(parsedAmount)) {
-        throw new InvalidTransactionAmountError(
-          'Amount must be a finite number'
-        )
-      }
-
-      if (parsedAmount <= 0) {
-        throw new InvalidTransactionAmountError(
-          'Amount must be greater than zero'
-        )
-      }
-
-      const amountInCents = Math.round(parsedAmount * 100)
-
-      if (!Number.isInteger(amountInCents)) {
-        throw new InvalidTransactionAmountError(
-          'Amount must have at most 2 decimal places'
-        )
-      }
-
-      const finalAmount = Number(parsedAmount.toFixed(2))
-
-      if (finalAmount !== Number(existingTransaction.amount)) {
-        allowedUpdates.amount = finalAmount
+    if (updateParams.description !== undefined) {
+      const validatedDescription = validateTransactionDescription(
+        updateParams.description
+      )
+      if (validatedDescription !== existingTransaction.description) {
+        updatesToApply.description = validatedDescription
       }
     }
 
-    if (filteredUpdateParams.description !== undefined) {
-      let normalizedDescription = null
-
-      if (filteredUpdateParams.description !== null) {
-        if (typeof filteredUpdateParams.description !== 'string') {
-          throw new InvalidTransactionDescriptionError(
-            'Description must be a string'
-          )
-        }
-
-        normalizedDescription = filteredUpdateParams.description.trim() || null
-      }
-
-      if (normalizedDescription !== existingTransaction.description) {
-        allowedUpdates.description = normalizedDescription
+    if (updateParams.type !== undefined) {
+      const validatedType = validateTransactionType(updateParams.type)
+      if (validatedType !== existingTransaction.type) {
+        updatesToApply.type = validatedType
       }
     }
 
-    if (filteredUpdateParams.type !== undefined) {
-      if (typeof filteredUpdateParams.type !== 'string') {
-        throw new InvalidTransactionTypeError(
-          'Transaction type must be a string'
-        )
-      }
-
-      const normalizedType = filteredUpdateParams.type.trim().toLowerCase()
-
-      if (!ALLOWED_TRANSACTION_TYPES.includes(normalizedType)) {
-        throw new InvalidTransactionTypeError(
-          `Transaction type must be one of: ${ALLOWED_TRANSACTION_TYPES.join(', ')}`
-        )
-      }
-
-      if (normalizedType !== existingTransaction.type) {
-        allowedUpdates.type = normalizedType
-      }
-    }
-
-    if (filteredUpdateParams.transaction_date !== undefined) {
-      let normalizedDate = null
-
-      if (filteredUpdateParams.transaction_date !== null) {
-        const parsedDate = new Date(filteredUpdateParams.transaction_date)
-
-        if (Number.isNaN(parsedDate.getTime())) {
-          throw new InvalidTransactionDateError('Invalid transaction date')
-        }
-
-        normalizedDate = parsedDate
-      }
-
+    if (updateParams.transaction_date !== undefined) {
+      const validatedDate = validateTransactionDate(
+        updateParams.transaction_date
+      )
       const existingDate = existingTransaction.transaction_date
-        ? new Date(existingTransaction.transaction_date)
+        ? new Date(existingTransaction.transaction_date).toISOString()
         : null
 
-      if (
-        !existingDate ||
-        normalizedDate?.getTime() !== existingDate.getTime()
-      ) {
-        allowedUpdates.transaction_date = normalizedDate
+      if (validatedDate?.toISOString() !== existingDate) {
+        updatesToApply.transaction_date = validatedDate
       }
     }
 
-    if (Object.keys(allowedUpdates).length === 0) {
+    if (Object.keys(updatesToApply).length === 0) {
       return existingTransaction
     }
 
     const updatedTransaction = await this.transactionRepository.update(
       transactionId,
-      allowedUpdates
+      updatesToApply
     )
 
     return updatedTransaction

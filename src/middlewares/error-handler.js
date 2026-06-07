@@ -27,6 +27,7 @@ import {
   InvalidTransactionTypeError,
   InvalidTransactionDateError,
   InvalidTransactionDescriptionError,
+  InvalidTransactionFieldError,
   TransactionNotFoundError,
   TransactionUnauthorizedError
 } from '../errors/transaction.js'
@@ -67,6 +68,7 @@ export const errorHandler = (error, req, res, _next) => {
     error instanceof InvalidIsActiveError ||
     error instanceof InvalidUpdateFieldError ||
     error instanceof InvalidTransactionIdError ||
+    error instanceof InvalidTransactionFieldError ||
     error instanceof InvalidTransactionNameError ||
     error instanceof InvalidTransactionAmountError ||
     error instanceof InvalidTransactionTypeError ||

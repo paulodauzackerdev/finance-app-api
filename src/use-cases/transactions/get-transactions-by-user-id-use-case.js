@@ -1,6 +1,5 @@
-import validator from 'validator'
-
-import { UserNotFoundError, InvalidUserIdError } from '../../errors/user.js'
+import { validateUserId } from '../../validators/user/index.js'
+import { UserNotFoundError } from '../../errors/user.js'
 
 export class GetTransactionsByUserIdUseCase {
   constructor(transactionRepository, userRepository) {
@@ -9,21 +8,16 @@ export class GetTransactionsByUserIdUseCase {
   }
 
   async execute(userId) {
-    if (!userId) {
-      throw new InvalidUserIdError('User ID is required')
-    }
+    const validatedUserId = validateUserId(userId)
 
-    if (!validator.isUUID(userId)) {
-      throw new InvalidUserIdError()
-    }
-
-    const user = await this.userRepository.findById(userId)
+    const user = await this.userRepository.findById(validatedUserId)
 
     if (!user) {
       throw new UserNotFoundError()
     }
 
-    const transactions = await this.transactionRepository.findByUserId(userId)
+    const transactions =
+      await this.transactionRepository.findByUserId(validatedUserId)
 
     return transactions
   }
