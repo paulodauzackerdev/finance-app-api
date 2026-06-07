@@ -67,6 +67,28 @@ export class TransactionRepository {
     return result
   }
 
+  async getUserBalance(userId) {
+    const result = await PostgresHelper.query(
+      `
+        SELECT
+          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income,
+          COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense,
+          COALESCE(SUM(CASE WHEN type = 'investment' THEN amount ELSE 0 END), 0) as total_investment,
+          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as balance
+        FROM transactions
+        WHERE user_id = $1
+      `,
+      [userId]
+    )
+
+    return {
+      total_income: parseFloat(result[0].total_income),
+      total_expense: parseFloat(result[0].total_expense),
+      total_investment: parseFloat(result[0].total_investment),
+      balance: parseFloat(result[0].balance)
+    }
+  }
+
   async create({ user_id, name, amount, description, type, transaction_date }) {
     const result = await PostgresHelper.query(
       `
