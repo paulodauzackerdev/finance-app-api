@@ -1,8 +1,3 @@
-export const normalizeEmail = (email) => {
-  if (typeof email !== 'string') return ''
-  return email.trim().toLowerCase()
-}
-
 export const removePasswordFromUser = (user) => {
   if (!user) return null
 

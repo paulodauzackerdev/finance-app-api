@@ -67,3 +67,13 @@ export class ForbiddenUserDeletionError extends Error {
     this.name = 'ForbiddenUserDeletionError'
   }
 }
+export class InvalidUpdateFieldError extends Error {
+  constructor(invalidFields, allowedFields) {
+    super(
+      `Invalid update fields: ${invalidFields.join(', ')}. Allowed fields are: ${allowedFields.join(', ')}`
+    )
+    this.name = 'InvalidUpdateFieldError'
+    this.invalidFields = invalidFields
+    this.allowedFields = allowedFields
+  }
+}

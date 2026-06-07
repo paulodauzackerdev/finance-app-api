@@ -16,7 +16,8 @@ import {
   InvalidUserIdError,
   InvalidIsActiveError,
   ForbiddenUserDeletionError,
-  MissingUserFieldsError
+  MissingUserFieldsError,
+  InvalidUpdateFieldError
 } from '../errors/user.js'
 
 import {
@@ -64,6 +65,7 @@ export const errorHandler = (error, req, res, _next) => {
     error instanceof WeakPasswordError ||
     error instanceof InvalidUserIdError ||
     error instanceof InvalidIsActiveError ||
+    error instanceof InvalidUpdateFieldError ||
     error instanceof InvalidTransactionIdError ||
     error instanceof InvalidTransactionNameError ||
     error instanceof InvalidTransactionAmountError ||

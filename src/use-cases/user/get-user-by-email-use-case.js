@@ -1,8 +1,8 @@
-import validator from 'validator'
-
 import { removePasswordFromUser } from '../../helpers/user.js'
 
-import { UserNotFoundError, InvalidEmailError } from '../../errors/user.js'
+import { validateEmail } from '../../validators/user/validate-email.js'
+
+import { UserNotFoundError } from '../../errors/user.js'
 
 export class GetUserByEmailUseCase {
   constructor(userRepository) {
@@ -10,11 +10,9 @@ export class GetUserByEmailUseCase {
   }
 
   async execute(email) {
-    if (!validator.isEmail(email)) {
-      throw new InvalidEmailError()
-    }
+    const normalizedEmail = validateEmail(email)
 
-    const user = await this.userRepository.findByEmail(email)
+    const user = await this.userRepository.findByEmail(normalizedEmail)
 
     if (!user) {
       throw new UserNotFoundError()

@@ -1,10 +1,9 @@
-import validator from 'validator'
-
 import { removePasswordFromUser } from '../../helpers/user.js'
+
+import { validateUserId } from '../../validators/user/index.js'
 
 import {
   UserNotFoundError,
-  InvalidUserIdError,
   ForbiddenUserDeletionError
 } from '../../errors/user.js'
 
@@ -14,9 +13,7 @@ export class DeleteUserUseCase {
   }
 
   async execute(userId) {
-    if (!validator.isUUID(userId)) {
-      throw new InvalidUserIdError()
-    }
+    validateUserId(userId)
 
     const existingUser = await this.userRepository.findById(userId)
 

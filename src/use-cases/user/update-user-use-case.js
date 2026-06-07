@@ -1,27 +1,41 @@
-import bcrypt from 'bcrypt'
-import validator from 'validator'
+import { removePasswordFromUser } from '../../helpers/user.js'
+import { hashPassword } from '../../helpers/password.js'
 
-import { removePasswordFromUser, normalizeEmail } from '../../helpers/user.js'
+import {
+  validateEmail,
+  validateName,
+  validatePassword,
+  validateUserId
+} from '../../validators/user/index.js'
 
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
-  InvalidNameError,
-  InvalidLastNameError,
-  InvalidEmailError,
-  WeakPasswordError,
   InvalidIsActiveError,
-  InvalidUserIdError
+  InvalidUpdateFieldError
 } from '../../errors/user.js'
 export class UpdateUserUseCase {
   constructor(userRepository) {
     this.userRepository = userRepository
   }
 
-  async execute(userId, updateParams) {
-    if (!validator.isUUID(userId)) {
-      throw new InvalidUserIdError()
+  validateAllowedFields(updateParams) {
+    const allowedFields = ['first_name', 'last_name', 'email', 'password']
+    const invalidFields = Object.keys(updateParams).filter(
+      (field) => !allowedFields.includes(field)
+    )
+
+    if (invalidFields.length > 0) {
+      throw new InvalidUpdateFieldError(invalidFields, allowedFields)
     }
+  }
+  async execute(userId, updateParams) {
+    if (!updateParams || typeof updateParams !== 'object') {
+      throw new Error('Update parameters must be an object')
+    }
+    this.validateAllowedFields(updateParams)
+
+    validateUserId(userId)
 
     const existingUser = await this.userRepository.findById(userId)
 
@@ -32,19 +46,7 @@ export class UpdateUserUseCase {
     const updatesToApply = {}
 
     if (updateParams.first_name !== undefined) {
-      if (typeof updateParams.first_name !== 'string') {
-        throw new InvalidNameError('First name must be a string')
-      }
-      const firstName = updateParams.first_name.trim()
-      if (!firstName) {
-        throw new InvalidNameError('First name is required')
-      }
-
-      if (!validator.isLength(firstName, { min: 1, max: 50 })) {
-        throw new InvalidNameError(
-          'First name must have between 1 and 50 characters'
-        )
-      }
+      const firstName = validateName(updateParams.first_name, 'First name')
 
       if (firstName !== existingUser.first_name) {
         updatesToApply.first_name = firstName
@@ -52,21 +54,7 @@ export class UpdateUserUseCase {
     }
 
     if (updateParams.last_name !== undefined) {
-      if (typeof updateParams.last_name !== 'string') {
-        throw new InvalidLastNameError('Last name must be a string')
-      }
-
-      const lastName = updateParams.last_name.trim()
-
-      if (!lastName) {
-        throw new InvalidLastNameError('Last name is required')
-      }
-
-      if (!validator.isLength(lastName, { min: 1, max: 50 })) {
-        throw new InvalidLastNameError(
-          'Last name must have between 1 and 50 characters'
-        )
-      }
+      const lastName = validateName(updateParams.last_name, 'Last name')
 
       if (lastName !== existingUser.last_name) {
         updatesToApply.last_name = lastName
@@ -74,19 +62,7 @@ export class UpdateUserUseCase {
     }
 
     if (updateParams.email !== undefined) {
-      if (typeof updateParams.email !== 'string') {
-        throw new InvalidEmailError('Email must be a string')
-      }
-
-      const normalizedEmail = normalizeEmail(updateParams.email)
-
-      if (!normalizedEmail) {
-        throw new InvalidEmailError('Email is required')
-      }
-
-      if (!validator.isEmail(normalizedEmail)) {
-        throw new InvalidEmailError('Invalid email format')
-      }
+      const normalizedEmail = validateEmail(updateParams.email)
 
       if (normalizedEmail !== existingUser.email) {
         const emailAlreadyExists =
@@ -101,22 +77,9 @@ export class UpdateUserUseCase {
     }
 
     if (updateParams.password !== undefined) {
-      if (typeof updateParams.password !== 'string') {
-        throw new WeakPasswordError('Password must be a string')
-      }
+      const validatedPassword = validatePassword(updateParams.password)
 
-      const password = updateParams.password.trim()
-
-      if (!password) {
-        throw new WeakPasswordError('Password is required')
-      }
-
-      if (!validator.isLength(password, { min: 6 })) {
-        throw new WeakPasswordError('Password must have at least 6 characters')
-      }
-
-      const password_hash = await bcrypt.hash(password, 10)
-      updatesToApply.password_hash = password_hash
+      updatesToApply.password_hash = await hashPassword(validatedPassword)
     }
 
     if (updateParams.is_active !== undefined) {
