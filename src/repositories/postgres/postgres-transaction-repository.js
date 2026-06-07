@@ -89,6 +89,22 @@ export class TransactionRepository {
     }
   }
 
+  // SE FOR USAR A FUNÇÃO do "03-get-user-balance-function.sql"
+  //
+  // async getUserBalance(userId) {
+  //   const result = await PostgresHelper.query(
+  //     'SELECT * FROM get_user_balance($1)',
+  //     [userId]
+  //   )
+
+  //   return {
+  //     total_income: parseFloat(result[0].total_income),
+  //     total_expense: parseFloat(result[0].total_expense),
+  //     total_investment: parseFloat(result[0].total_investment),
+  //     balance: parseFloat(result[0].balance)
+  //   }
+  // }
+
   async create({ user_id, name, amount, description, type, transaction_date }) {
     const result = await PostgresHelper.query(
       `

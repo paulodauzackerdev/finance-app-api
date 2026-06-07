@@ -1,4 +1,3 @@
-// validate-transaction-date.js
 import { InvalidTransactionDateError } from '../../errors/transaction.js'
 
 export const validateTransactionDate = (date) => {

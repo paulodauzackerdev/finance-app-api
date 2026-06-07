@@ -12,8 +12,8 @@ export const validatePassword = (password) => {
     throw new WeakPasswordError('Password is required')
   }
 
-  if (!validator.isLength(trimmedPassword, { min: 6 })) {
-    throw new WeakPasswordError('Password must have at least 6 characters')
+  if (!validator.isLength(trimmedPassword, { min: 8 })) {
+    throw new WeakPasswordError('Password must have at least 8 characters')
   }
 
   return trimmedPassword
