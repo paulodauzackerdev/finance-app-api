@@ -3,7 +3,11 @@ node_modules/
 
 # env
 .env
+.env.db
 .env.local
+.env.*.local
+.env.pgadmin
+.env.pgadmin.local
 .env.production
 
 # postgres local files
@@ -27,3 +31,4 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+

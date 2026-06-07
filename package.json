@@ -8,8 +8,7 @@
     "start:dev": "node --watch index.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
-    "format": "prettier --write \"src/**/*.js\"",
-    "format:all": "prettier --write .",
+    "format": "prettier --write .",
     "prepare": "husky",
     "migrations": "node src/db/postgres/migrations/exec.js"
   },
@@ -25,6 +24,7 @@
     "globals": "^17.5.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.4.0",
+    "nodemon": "^3.1.14",
     "prettier": "^3.8.3"
   },
   "dependencies": {

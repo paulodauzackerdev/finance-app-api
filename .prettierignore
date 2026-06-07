@@ -1,7 +1,4 @@
 node_modules
 dist
 build
-.postgres/
 .env
-/.postgres/18/docker
-.postgres/**

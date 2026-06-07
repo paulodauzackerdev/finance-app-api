@@ -7,13 +7,11 @@ export default defineConfig([
   {
     ignores: [
       'node_modules/**',
-      '.postgres/**',
       'dist/**',
       'build/**',
       'coverage/**',
       '*.log',
-      '.env*',
-      '/.postgres/18/docker'
+      '.env*'
     ]
   },
   {

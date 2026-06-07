@@ -1,0 +1,53 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: finance-postgres
+    restart: always
+
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+
+    ports:
+      - '5432:5432'
+
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: .
+    container_name: finance-api
+    restart: always
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - ADMIN_USER_ID=${ADMIN_USER_ID}
+
+    ports:
+      - '8000:8000'
+
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+    command: npm run dev
+
+volumes:
+  pgdata:
