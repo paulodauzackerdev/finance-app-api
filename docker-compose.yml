@@ -23,7 +23,7 @@ services:
 
   api:
     build: .
-    container_name: finance-api
+    container_name: finance-app
     restart: always
 
     depends_on:
