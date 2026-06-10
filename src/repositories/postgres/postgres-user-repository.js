@@ -1,139 +1,127 @@
-import { PostgresHelper } from '../../db/postgres/helper.js'
+import { prisma } from '../../../prisma/prisma.js'
 
 export class UserRepository {
   async findAll() {
-    const result = await PostgresHelper.query(`
-    SELECT
-      id,
-      first_name,
-      last_name,
-      email,
-      is_active,
-      created_at,
-      updated_at
-    FROM users
-    ORDER BY created_at DESC
-  `)
-
-    return result
+    return prisma.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    })
   }
-  async findById(userId) {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          id,
-          first_name,
-          last_name,
-          email,
-          is_active,
-          created_at,
-          updated_at
-        FROM users
-        WHERE id = $1
-      `,
-      [userId]
-    )
 
-    return result[0] || null
+  async findById(userId) {
+    return prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
   }
 
   async findByEmail(email) {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          id,
-          first_name,
-          last_name,
-          email,
-          is_active,
-          created_at,
-          updated_at
-        FROM users
-        WHERE email = $1
-      `,
-      [email]
-    )
-
-    return result[0] || null
+    return prisma.user.findUnique({
+      where: {
+        email
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        passwordHash: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
   }
 
   async create({ first_name, last_name, email, password_hash }) {
-    const result = await PostgresHelper.query(
-      `
-        INSERT INTO users (
-          first_name,
-          last_name,
-          email,
-          password_hash
-        )
-        VALUES ($1, $2, $3, $4)
-
-        RETURNING
-          id,
-          first_name,
-          last_name,
-          email,
-          is_active,
-          created_at,
-          updated_at
-      `,
-      [first_name, last_name, email, password_hash]
-    )
-
-    return result[0]
+    return prisma.user.create({
+      data: {
+        firstName: first_name,
+        lastName: last_name,
+        email,
+        passwordHash: password_hash
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
   }
 
   async update(userId, updateParams) {
-    if (!updateParams || Object.keys(updateParams).length === 0) {
-      throw new Error('No fields to update')
+    const data = {}
+
+    if (updateParams.first_name !== undefined) {
+      data.firstName = updateParams.first_name
     }
 
-    const updateFields = []
-    const updateValues = []
-
-    for (const [key, value] of Object.entries(updateParams)) {
-      updateFields.push(`${key} = $${updateValues.length + 1}`)
-      updateValues.push(value)
+    if (updateParams.last_name !== undefined) {
+      data.lastName = updateParams.last_name
     }
 
-    updateValues.push(userId)
+    if (updateParams.email !== undefined) {
+      data.email = updateParams.email
+    }
 
-    const query = `
-    UPDATE users
-    SET ${updateFields.join(', ')}
-    WHERE id = $${updateValues.length}
-    RETURNING
-      id,
-      first_name,
-      last_name,
-      email,
-      is_active,
-      created_at,
-      updated_at
-  `
+    if (updateParams.password_hash !== undefined) {
+      data.passwordHash = updateParams.password_hash
+    }
 
-    const result = await PostgresHelper.query(query, updateValues)
-    return result[0] || null
+    return prisma.user.update({
+      where: {
+        id: userId
+      },
+      data,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
   }
 
   async delete(userId) {
-    const result = await PostgresHelper.query(
-      `
-        DELETE FROM users
-        WHERE id = $1
-
-        RETURNING
-          id,
-          first_name,
-          last_name,
-          email,
-          is_active,
-          created_at,
-          updated_at
-      `,
-      [userId]
-    )
-
-    return result[0] || null
+    return prisma.user.delete({
+      where: {
+        id: userId
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    })
   }
 }

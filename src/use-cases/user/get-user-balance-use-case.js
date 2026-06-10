@@ -21,7 +21,7 @@ export class GetUserBalanceUseCase {
 
     return {
       user_id: validatedUserId,
-      user_name: `${user.first_name} ${user.last_name}`,
+      user_name: `${user.firstName} ${user.lastName}`,
       user_email: user.email,
       ...balance
     }

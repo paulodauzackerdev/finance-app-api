@@ -1,200 +1,117 @@
-import { PostgresHelper } from '../../db/postgres/helper.js'
+import { prisma } from '../../../prisma/prisma.js'
 
 export class TransactionRepository {
   async findAll() {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          id,
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date,
-          created_at,
-          updated_at
-        FROM transactions
-        ORDER BY transaction_date DESC
-      `
-    )
-
-    return result
+    return prisma.transaction.findMany({
+      orderBy: {
+        transactionDate: 'desc'
+      }
+    })
   }
 
   async findById(transactionId) {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          id,
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date,
-          created_at,
-          updated_at
-        FROM transactions
-        WHERE id = $1
-      `,
-      [transactionId]
-    )
-
-    return result[0] || null
+    return prisma.transaction.findUnique({
+      where: {
+        id: transactionId
+      }
+    })
   }
 
   async findByUserId(userId) {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          id,
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date,
-          created_at,
-          updated_at
-        FROM transactions
-        WHERE user_id = $1
-        ORDER BY transaction_date DESC
-      `,
-      [userId]
-    )
-
-    return result
+    return prisma.transaction.findMany({
+      where: {
+        userId
+      },
+      orderBy: {
+        transactionDate: 'desc'
+      }
+    })
   }
 
   async getUserBalance(userId) {
-    const result = await PostgresHelper.query(
-      `
-        SELECT
-          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE 0 END), 0) as total_income,
-          COALESCE(SUM(CASE WHEN type = 'expense' THEN amount ELSE 0 END), 0) as total_expense,
-          COALESCE(SUM(CASE WHEN type = 'investment' THEN amount ELSE 0 END), 0) as total_investment,
-          COALESCE(SUM(CASE WHEN type = 'income' THEN amount ELSE -amount END), 0) as balance
-        FROM transactions
-        WHERE user_id = $1
-      `,
-      [userId]
-    )
+    const result = await prisma.transaction.groupBy({
+      by: ['type'],
+      where: {
+        userId
+      },
+      _sum: {
+        amount: true
+      }
+    })
+
+    let totalIncome = 0
+    let totalExpense = 0
+    let totalInvestment = 0
+
+    for (const item of result) {
+      const value = Number(item._sum.amount || 0)
+
+      if (item.type === 'income') totalIncome = value
+      if (item.type === 'expense') totalExpense = value
+      if (item.type === 'investment') totalInvestment = value
+    }
 
     return {
-      total_income: parseFloat(result[0].total_income),
-      total_expense: parseFloat(result[0].total_expense),
-      total_investment: parseFloat(result[0].total_investment),
-      balance: parseFloat(result[0].balance)
+      total_income: totalIncome,
+      total_expense: totalExpense,
+      total_investment: totalInvestment,
+      balance: totalIncome - totalExpense - totalInvestment
     }
   }
-
-  // SE FOR USAR A FUNÇÃO do "03-get-user-balance-function.sql"
-  //
-  // async getUserBalance(userId) {
-  //   const result = await PostgresHelper.query(
-  //     'SELECT * FROM get_user_balance($1)',
-  //     [userId]
-  //   )
-
-  //   return {
-  //     total_income: parseFloat(result[0].total_income),
-  //     total_expense: parseFloat(result[0].total_expense),
-  //     total_investment: parseFloat(result[0].total_investment),
-  //     balance: parseFloat(result[0].balance)
-  //   }
-  // }
 
   async create({ user_id, name, amount, description, type, transaction_date }) {
-    const result = await PostgresHelper.query(
-      `
-        INSERT INTO transactions (
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date
-        )
-
-        VALUES ($1, $2, $3, $4, $5, $6)
-
-        RETURNING
-          id,
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date,
-          created_at,
-          updated_at
-      `,
-      [user_id, name, amount, description, type, transaction_date]
-    )
-
-    return result[0]
-  }
-
-  async update(transactionId, updateParams) {
-    if (!updateParams || Object.keys(updateParams).length === 0) {
-      throw new Error('No fields to update')
-    }
-
-    const updateFields = []
-    const updateValues = []
-
-    for (const [key, value] of Object.entries(updateParams)) {
-      updateFields.push(`${key} = $${updateValues.length + 1}`)
-
-      updateValues.push(value)
-    }
-
-    updateValues.push(transactionId)
-
-    const query = `
-      UPDATE transactions
-      SET ${updateFields.join(', ')}
-
-      WHERE id = $${updateValues.length}
-
-      RETURNING
-        id,
-        user_id,
+    return prisma.transaction.create({
+      data: {
+        userId: user_id,
         name,
         amount,
         description,
         type,
-        transaction_date,
-        created_at,
-        updated_at
-    `
+        transactionDate: transaction_date
+      }
+    })
+  }
 
-    const result = await PostgresHelper.query(query, updateValues)
+  async update(transactionId, updateParams) {
+    const data = {}
 
-    return result[0] || null
+    if (updateParams.user_id !== undefined) {
+      data.userId = updateParams.user_id
+    }
+
+    if (updateParams.name !== undefined) {
+      data.name = updateParams.name
+    }
+
+    if (updateParams.amount !== undefined) {
+      data.amount = updateParams.amount
+    }
+
+    if (updateParams.description !== undefined) {
+      data.description = updateParams.description
+    }
+
+    if (updateParams.type !== undefined) {
+      data.type = updateParams.type
+    }
+
+    if (updateParams.transaction_date !== undefined) {
+      data.transactionDate = updateParams.transaction_date
+    }
+
+    return prisma.transaction.update({
+      where: {
+        id: transactionId
+      },
+      data
+    })
   }
 
   async delete(transactionId) {
-    const result = await PostgresHelper.query(
-      `
-        DELETE FROM transactions
-        WHERE id = $1
-
-        RETURNING
-          id,
-          user_id,
-          name,
-          amount,
-          description,
-          type,
-          transaction_date,
-          created_at,
-          updated_at
-      `,
-      [transactionId]
-    )
-
-    return result[0] || null
+    return prisma.transaction.delete({
+      where: {
+        id: transactionId
+      }
+    })
   }
 }

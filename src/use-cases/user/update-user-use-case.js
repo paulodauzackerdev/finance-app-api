@@ -11,9 +11,9 @@ import {
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
-  InvalidIsActiveError,
   InvalidUpdateFieldError
 } from '../../errors/user.js'
+
 export class UpdateUserUseCase {
   constructor(userRepository) {
     this.userRepository = userRepository
@@ -29,10 +29,12 @@ export class UpdateUserUseCase {
       throw new InvalidUpdateFieldError(invalidFields, allowedFields)
     }
   }
+
   async execute(userId, updateParams) {
     if (!updateParams || typeof updateParams !== 'object') {
       throw new Error('Update parameters must be an object')
     }
+
     this.validateAllowedFields(updateParams)
 
     validateUserId(userId)
@@ -48,7 +50,7 @@ export class UpdateUserUseCase {
     if (updateParams.first_name !== undefined) {
       const firstName = validateName(updateParams.first_name, 'First name')
 
-      if (firstName !== existingUser.first_name) {
+      if (firstName !== existingUser.firstName) {
         updatesToApply.first_name = firstName
       }
     }
@@ -56,7 +58,7 @@ export class UpdateUserUseCase {
     if (updateParams.last_name !== undefined) {
       const lastName = validateName(updateParams.last_name, 'Last name')
 
-      if (lastName !== existingUser.last_name) {
+      if (lastName !== existingUser.lastName) {
         updatesToApply.last_name = lastName
       }
     }
@@ -78,18 +80,7 @@ export class UpdateUserUseCase {
 
     if (updateParams.password !== undefined) {
       const validatedPassword = validatePassword(updateParams.password)
-
       updatesToApply.password_hash = await hashPassword(validatedPassword)
-    }
-
-    if (updateParams.is_active !== undefined) {
-      if (typeof updateParams.is_active !== 'boolean') {
-        throw new InvalidIsActiveError()
-      }
-
-      if (updateParams.is_active !== existingUser.is_active) {
-        updatesToApply.is_active = updateParams.is_active
-      }
     }
 
     if (Object.keys(updatesToApply).length === 0) {

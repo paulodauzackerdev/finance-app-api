@@ -34,16 +34,13 @@ CREATE TABLE "transactions" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE INDEX "users_email_idx" ON "users"("email");
-
--- CreateIndex
 CREATE INDEX "users_is_active_idx" ON "users"("is_active");
 
 -- CreateIndex
 CREATE INDEX "users_created_at_idx" ON "users"("created_at");
 
 -- CreateIndex
-CREATE INDEX "transactions_user_id_idx" ON "transactions"("user_id");
+CREATE INDEX "transactions_user_id_transaction_date_idx" ON "transactions"("user_id", "transaction_date");
 
 -- CreateIndex
 CREATE INDEX "transactions_type_idx" ON "transactions"("type");
