@@ -1,7 +1,7 @@
 export const removePasswordFromUser = (user) => {
   if (!user) return null
 
-  const { password_hash: passwordHash, ...userWithoutPassword } = user
+  const { passwordHash: passwordHash, ...userWithoutPassword } = user
 
   void passwordHash
 

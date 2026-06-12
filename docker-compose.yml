@@ -8,6 +8,7 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
+      - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
 
     ports:
       - '5432:5432'
@@ -23,7 +24,7 @@ services:
 
   api:
     build: .
-    container_name: finance-api
+    container_name: finance-app
     restart: always
 
     depends_on:

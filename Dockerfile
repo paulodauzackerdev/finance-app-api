@@ -1,22 +1,20 @@
-FROM node:24-alpine
-
-# Instala ferramentas úteis (opcional)
-RUN apk add --no-cache \
-    python3 \
-    make \
-    g++ \
-    bash \
-    curl \
-    git
+FROM node:22-slim
 
 WORKDIR /app
 
-# Copia package files
+RUN apt-get update && apt-get install -y \
+  openssl \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY package*.json ./
 
-# Instala dependências
+COPY prisma ./prisma/
+
 RUN npm ci
-# Copia o resto do código
+
+RUN npx prisma generate
+
 COPY . .
 
 EXPOSE 8000
