@@ -5,11 +5,13 @@ export class GetUserByEmailController {
     this.getUserByEmailUseCase = getUserByEmailUseCase
   }
 
-  handle = async (req, res) => {
-    const { email } = req.params
-
-    const user = await this.getUserByEmailUseCase.execute(email)
-
-    return ok(res, user)
+  handle = async (req, res, next) => {
+    try {
+      const { email } = req.params
+      const user = await this.getUserByEmailUseCase.execute(email)
+      return ok(res, user)
+    } catch (error) {
+      next(error)
+    }
   }
 }

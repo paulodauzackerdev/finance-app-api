@@ -5,11 +5,13 @@ export class GetUserBalanceController {
     this.getUserBalanceUseCase = getUserBalanceUseCase
   }
 
-  handle = async (req, res) => {
-    const { userId } = req.params
-
-    const balance = await this.getUserBalanceUseCase.execute(userId)
-
-    return ok(res, balance)
+  handle = async (req, res, next) => {
+    try {
+      const { userId } = req.params
+      const balance = await this.getUserBalanceUseCase.execute(userId)
+      return ok(res, balance)
+    } catch (error) {
+      next(error)
+    }
   }
 }

@@ -1,3 +1,4 @@
+// UpdateUserController.js
 import { ok } from '../../helpers/http.js'
 
 export class UpdateUserController {
@@ -5,11 +6,13 @@ export class UpdateUserController {
     this.updateUserUseCase = updateUserUseCase
   }
 
-  handle = async (req, res) => {
-    const { id } = req.params
-
-    const user = await this.updateUserUseCase.execute(id, req.body)
-
-    return ok(res, user)
+  handle = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const user = await this.updateUserUseCase.execute(id, req.body)
+      return ok(res, user)
+    } catch (error) {
+      next(error)
+    }
   }
 }

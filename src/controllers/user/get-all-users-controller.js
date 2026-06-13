@@ -5,9 +5,12 @@ export class GetAllUsersController {
     this.getAllUsersUseCase = getAllUsersUseCase
   }
 
-  handle = async (req, res) => {
-    const users = await this.getAllUsersUseCase.execute()
-
-    return ok(res, users)
+  handle = async (req, res, next) => {
+    try {
+      const users = await this.getAllUsersUseCase.execute()
+      return ok(res, users)
+    } catch (error) {
+      next(error)
+    }
   }
 }

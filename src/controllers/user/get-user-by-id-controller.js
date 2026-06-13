@@ -5,11 +5,13 @@ export class GetUserByIdController {
     this.getUserByIdUseCase = getUserByIdUseCase
   }
 
-  handle = async (req, res) => {
-    const { id } = req.params
-
-    const user = await this.getUserByIdUseCase.execute(id)
-
-    return ok(res, user)
+  handle = async (req, res, next) => {
+    try {
+      const { id } = req.params
+      const user = await this.getUserByIdUseCase.execute(id)
+      return ok(res, user)
+    } catch (error) {
+      next(error)
+    }
   }
 }

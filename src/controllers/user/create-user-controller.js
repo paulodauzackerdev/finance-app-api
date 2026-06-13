@@ -5,9 +5,12 @@ export class CreateUserController {
     this.createUserUseCase = createUserUseCase
   }
 
-  handle = async (req, res) => {
-    const user = await this.createUserUseCase.execute(req.body)
-
-    return created(res, user)
+  handle = async (req, res, next) => {
+    try {
+      const user = await this.createUserUseCase.execute(req.body)
+      return created(res, user)
+    } catch (error) {
+      next(error)
+    }
   }
 }
