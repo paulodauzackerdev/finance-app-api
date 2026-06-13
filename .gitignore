@@ -32,3 +32,5 @@ Thumbs.db
 .vscode/
 .idea/
 
+# Others
+vanilla_jest.config.mjs
