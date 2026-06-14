@@ -1,27 +1,32 @@
 import { prisma } from '../../../prisma/prisma.js'
 
 export class TransactionRepository {
-  async findAll() {
+  async findAll(includeDeleted = false) {
+    const where = includeDeleted ? {} : { deletedAt: null }
+
     return prisma.transaction.findMany({
+      where,
       orderBy: {
         transactionDate: 'desc'
       }
     })
   }
 
-  async findById(transactionId) {
+  async findById(transactionId, includeDeleted = false) {
+    const where = includeDeleted
+      ? { id: transactionId }
+      : { id: transactionId, deletedAt: null }
+
     return prisma.transaction.findUnique({
-      where: {
-        id: transactionId
-      }
+      where
     })
   }
 
-  async findByUserId(userId) {
+  async findByUserId(userId, includeDeleted = false) {
+    const where = includeDeleted ? { userId } : { userId, deletedAt: null }
+
     return prisma.transaction.findMany({
-      where: {
-        userId
-      },
+      where,
       orderBy: {
         transactionDate: 'desc'
       }
@@ -32,7 +37,8 @@ export class TransactionRepository {
     const result = await prisma.transaction.groupBy({
       by: ['type'],
       where: {
-        userId
+        userId,
+        deletedAt: null
       },
       _sum: {
         amount: true
@@ -52,22 +58,22 @@ export class TransactionRepository {
     }
 
     return {
-      total_income: totalIncome,
-      total_expense: totalExpense,
-      total_investment: totalInvestment,
+      totalIncome,
+      totalExpense,
+      totalInvestment,
       balance: totalIncome - totalExpense - totalInvestment
     }
   }
 
-  async create({ user_id, name, amount, description, type, transaction_date }) {
+  async create({ userId, name, amount, description, type, transactionDate }) {
     return prisma.transaction.create({
       data: {
-        userId: user_id,
+        userId,
         name,
         amount,
         description,
         type,
-        transactionDate: transaction_date
+        transactionDate
       }
     })
   }
@@ -75,8 +81,8 @@ export class TransactionRepository {
   async update(transactionId, updateParams) {
     const data = {}
 
-    if (updateParams.user_id !== undefined) {
-      data.userId = updateParams.user_id
+    if (updateParams.userId !== undefined) {
+      data.userId = updateParams.userId
     }
 
     if (updateParams.name !== undefined) {
@@ -95,22 +101,57 @@ export class TransactionRepository {
       data.type = updateParams.type
     }
 
-    if (updateParams.transaction_date !== undefined) {
-      data.transactionDate = updateParams.transaction_date
+    if (updateParams.transactionDate !== undefined) {
+      data.transactionDate = updateParams.transactionDate
     }
 
     return prisma.transaction.update({
       where: {
-        id: transactionId
+        id: transactionId,
+        deletedAt: null
       },
       data
     })
   }
 
-  async delete(transactionId) {
+  async softDelete(transactionId) {
+    return prisma.transaction.update({
+      where: {
+        id: transactionId,
+        deletedAt: null
+      },
+      data: {
+        deletedAt: new Date()
+      }
+    })
+  }
+
+  async hardDelete(transactionId) {
     return prisma.transaction.delete({
       where: {
         id: transactionId
+      }
+    })
+  }
+
+  async restore(transactionId) {
+    return prisma.transaction.update({
+      where: {
+        id: transactionId
+      },
+      data: {
+        deletedAt: null
+      }
+    })
+  }
+
+  async findDeleted() {
+    return prisma.transaction.findMany({
+      where: {
+        deletedAt: { not: null }
+      },
+      orderBy: {
+        deletedAt: 'desc'
       }
     })
   }

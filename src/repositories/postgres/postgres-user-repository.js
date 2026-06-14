@@ -1,8 +1,11 @@
 import { prisma } from '../../../prisma/prisma.js'
 
 export class UserRepository {
-  async findAll() {
+  async findAll(includeDeleted = false) {
+    const where = includeDeleted ? {} : { deletedAt: null }
+
     return prisma.user.findMany({
+      where,
       select: {
         id: true,
         firstName: true,
@@ -10,7 +13,8 @@ export class UserRepository {
         email: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        deletedAt: true
       },
       orderBy: {
         createdAt: 'desc'
@@ -18,11 +22,13 @@ export class UserRepository {
     })
   }
 
-  async findById(userId) {
+  async findById(userId, includeDeleted = false) {
+    const where = includeDeleted
+      ? { id: userId }
+      : { id: userId, deletedAt: null }
+
     return prisma.user.findUnique({
-      where: {
-        id: userId
-      },
+      where,
       select: {
         id: true,
         firstName: true,
@@ -30,16 +36,17 @@ export class UserRepository {
         email: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        deletedAt: true
       }
     })
   }
 
-  async findByEmail(email) {
+  async findByEmail(email, includeDeleted = false) {
+    const where = includeDeleted ? { email } : { email, deletedAt: null }
+
     return prisma.user.findUnique({
-      where: {
-        email
-      },
+      where,
       select: {
         id: true,
         firstName: true,
@@ -48,18 +55,19 @@ export class UserRepository {
         passwordHash: true,
         isActive: true,
         createdAt: true,
-        updatedAt: true
+        updatedAt: true,
+        deletedAt: true
       }
     })
   }
 
-  async create({ first_name, last_name, email, password_hash }) {
+  async create({ firstName, lastName, email, passwordHash }) {
     return prisma.user.create({
       data: {
-        firstName: first_name,
-        lastName: last_name,
+        firstName,
+        lastName,
         email,
-        passwordHash: password_hash
+        passwordHash
       },
       select: {
         id: true,
@@ -76,25 +84,30 @@ export class UserRepository {
   async update(userId, updateParams) {
     const data = {}
 
-    if (updateParams.first_name !== undefined) {
-      data.firstName = updateParams.first_name
+    if (updateParams.firstName !== undefined) {
+      data.firstName = updateParams.firstName
     }
 
-    if (updateParams.last_name !== undefined) {
-      data.lastName = updateParams.last_name
+    if (updateParams.lastName !== undefined) {
+      data.lastName = updateParams.lastName
     }
 
     if (updateParams.email !== undefined) {
       data.email = updateParams.email
     }
 
-    if (updateParams.password_hash !== undefined) {
-      data.passwordHash = updateParams.password_hash
+    if (updateParams.passwordHash !== undefined) {
+      data.passwordHash = updateParams.passwordHash
+    }
+
+    if (updateParams.isActive !== undefined) {
+      data.isActive = updateParams.isActive
     }
 
     return prisma.user.update({
       where: {
-        id: userId
+        id: userId,
+        deletedAt: null
       },
       data,
       select: {
@@ -108,10 +121,42 @@ export class UserRepository {
     })
   }
 
-  async delete(userId) {
+  async softDelete(userId) {
+    return prisma.user.update({
+      where: {
+        id: userId,
+        deletedAt: null
+      },
+      data: {
+        deletedAt: new Date(),
+        isActive: false // Opcional: desativar também
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        deletedAt: true
+      }
+    })
+  }
+
+  async hardDelete(userId) {
     return prisma.user.delete({
       where: {
         id: userId
+      }
+    })
+  }
+
+  async restore(userId) {
+    return prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        deletedAt: null,
+        isActive: true
       },
       select: {
         id: true,
@@ -121,6 +166,21 @@ export class UserRepository {
         isActive: true,
         createdAt: true,
         updatedAt: true
+      }
+    })
+  }
+
+  async findDeleted() {
+    return prisma.user.findMany({
+      where: {
+        deletedAt: { not: null }
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        deletedAt: true
       }
     })
   }
