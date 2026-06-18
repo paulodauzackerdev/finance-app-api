@@ -17,7 +17,7 @@ const ALLOWED_UPDATE_FIELDS = [
   'amount',
   'description',
   'type',
-  'transaction_date'
+  'transactionDate'
 ]
 
 export class UpdateTransactionUseCase {
@@ -86,16 +86,16 @@ export class UpdateTransactionUseCase {
       }
     }
 
-    if (updateParams.transaction_date !== undefined) {
+    if (updateParams.transactionDate !== undefined) {
       const validatedDate = validateTransactionDate(
-        updateParams.transaction_date
+        updateParams.transactionDate
       )
-      const existingDate = existingTransaction.transaction_date
-        ? new Date(existingTransaction.transaction_date).toISOString()
+      const existingDate = existingTransaction.transactionDate
+        ? new Date(existingTransaction.transactionDate).toISOString()
         : null
 
       if (validatedDate?.toISOString() !== existingDate) {
-        updatesToApply.transaction_date = validatedDate
+        updatesToApply.transactionDate = validatedDate
       }
     }
 

@@ -15,19 +15,12 @@ export class CreateTransactionUseCase {
     this.userRepository = userRepository
   }
 
-  async execute({
-    user_id,
-    name,
-    amount,
-    description,
-    type,
-    transaction_date
-  }) {
-    const validatedUserId = validateUserId(user_id)
+  async execute({ userId, name, amount, description, type, transactionDate }) {
+    const validatedUserId = validateUserId(userId)
     const validatedName = validateTransactionName(name)
     const validatedAmount = validateTransactionAmount(amount)
     const validatedType = validateTransactionType(type)
-    const validatedDate = validateTransactionDate(transaction_date)
+    const validatedDate = validateTransactionDate(transactionDate)
     const validatedDescription = validateTransactionDescription(description)
 
     const user = await this.userRepository.findById(validatedUserId)
@@ -37,12 +30,12 @@ export class CreateTransactionUseCase {
     }
 
     const transaction = await this.transactionRepository.create({
-      user_id: validatedUserId,
+      userId: validatedUserId,
       name: validatedName,
       amount: validatedAmount,
       description: validatedDescription,
       type: validatedType,
-      transaction_date: validatedDate
+      transactionDate: validatedDate
     })
 
     return transaction
