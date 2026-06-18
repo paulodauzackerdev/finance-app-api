@@ -20,10 +20,10 @@ export class GetUserBalanceUseCase {
       await this.transactionRepository.getUserBalance(validatedUserId)
 
     return {
-      user_id: validatedUserId,
-      user_name: `${user.firstName} ${user.lastName}`,
-      user_email: user.email,
-      ...balance
+      userId: validatedUserId,
+      userName: `${user.firstName} ${user.lastName}`,
+      userEmail: user.email,
+      balance
     }
   }
 }
