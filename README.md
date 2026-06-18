@@ -258,12 +258,12 @@ Body:
 
 ```json
 {
-  "user_id": "USER_UUID",
+  "userId": "USER_UUID",
   "name": "Salary",
   "amount": 3500.5,
   "description": "Monthly salary",
   "type": "income",
-  "transaction_date": "2026-05-27T15:30:00.000Z"
+  "transactionDate": "2026-05-27T15:30:00.000Z"
 }
 ```
 
