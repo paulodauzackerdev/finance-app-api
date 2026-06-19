@@ -4,9 +4,9 @@ describe('GetUserByEmailController', () => {
   it('should return 200 with user when successful', async () => {
     // Arrange
     const expectedUser = {
-      id: 1,
-      first_name: 'Sarah',
-      last_name: 'Connor',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      firstName: 'Sarah',
+      lastName: 'Connor',
       email: 'sarahconnor@resistance.com'
     }
 

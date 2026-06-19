@@ -4,9 +4,9 @@ describe('GetUserByIdController', () => {
   it('should return 200 with user when successful', async () => {
     // Arrange
     const expectedUser = {
-      id: 1,
-      first_name: 'Sarah',
-      last_name: 'Connor',
+      id: '550e8400-e29b-41d4-a716-446655440000',
+      firstName: 'Sarah',
+      lastName: 'Connor',
       email: 'sarahconnor@resistance.com'
     }
 
@@ -18,7 +18,7 @@ describe('GetUserByIdController', () => {
 
     const req = {
       params: {
-        id: '1'
+        id: '550e8400-e29b-41d4-a716-446655440000'
       }
     }
 
@@ -36,7 +36,9 @@ describe('GetUserByIdController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(getUserByIdUseCase.execute).toHaveBeenCalledWith('1')
+    expect(getUserByIdUseCase.execute).toHaveBeenCalledWith(
+      '550e8400-e29b-41d4-a716-446655440000'
+    )
     expect(getUserByIdUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(res.status).toHaveBeenCalledWith(200)
@@ -60,7 +62,7 @@ describe('GetUserByIdController', () => {
 
     const req = {
       params: {
-        id: '999'
+        id: '550e8400-e29b-41d4-a716-446655440001'
       }
     }
 
@@ -74,7 +76,9 @@ describe('GetUserByIdController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(getUserByIdUseCase.execute).toHaveBeenCalledWith('999')
+    expect(getUserByIdUseCase.execute).toHaveBeenCalledWith(
+      '550e8400-e29b-41d4-a716-446655440001'
+    )
     expect(getUserByIdUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(next).toHaveBeenCalledWith(error)
