@@ -21,7 +21,8 @@ This project was created to study and apply backend engineering concepts such as
 - Express.js
 - PostgreSQL
 - JavaScript (ES Modules)
-- Validator.js
+- Prisma (ORM)
+- Zod (validation)
 - Bcrypt
 - Dotenv
 
@@ -91,17 +92,23 @@ Repositories are injected into use cases, allowing easy replacement between:
 - Get user by ID
 - Get user by email
 - Update user
-- Delete user
+- Soft delete user
+- Hard delete user (permanent)
+- Restore user
+- Get user balance
 
 ---
 
 ## Transactions
 
 - Create transaction
-- Transaction validation
+- List transactions by user
+- Update transaction
+- Soft delete transaction
+- Hard delete transaction (permanent)
+- Restore transaction
 - User ownership validation
 - Financial amount validation
-- PostgreSQL persistence
 
 ---
 
@@ -193,9 +200,9 @@ Run your PostgreSQL migration script to create:
 
 # API Endpoints
 
-# Users
+## Users
 
-## Create user
+### Create user
 
 ```http
 POST /api/users
@@ -205,50 +212,117 @@ Body:
 
 ```json
 {
-  "first_name": "Paulo",
-  "last_name": "Dauzacker",
+  "firstName": "Paulo",
+  "lastName": "Dauzacker",
   "email": "paulo@email.com",
-  "password": "123456"
+  "password": "Test@1234"
 }
 ```
 
+Password requirements: minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
+
 ---
 
-## Get all users
+### Get all users
 
 ```http
 GET /api/users
 ```
 
+Returns all active (non-deleted) users.
+
 ---
 
-## Get user by ID
+### Get user by ID
 
 ```http
 GET /api/users/:id
 ```
 
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | User ID |
+
 ---
 
-## Update user
+### Get user by email
+
+```http
+GET /api/users/email/:email
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `email` | string | User email |
+
+---
+
+### Get user balance
+
+```http
+GET /api/users/:id/balance
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | UUID | User ID |
+
+Returns `{ userId, userName, userEmail, balance }` with income, expense and investment totals.
+
+---
+
+### Update user
 
 ```http
 PATCH /api/users/:id
 ```
 
+Body (at least one field required):
+
+```json
+{
+  "firstName": "Paulo",
+  "lastName": "Updated",
+  "email": "paulo@email.com",
+  "password": "NewPass@123"
+}
+```
+
 ---
 
-## Delete user
+### Soft delete user
 
 ```http
 DELETE /api/users/:id
 ```
 
+Marks the user as deleted (sets `deletedAt` timestamp). The user will no longer appear in listings.
+
 ---
 
-# Transactions
+### Hard delete user (permanent)
 
-## Create transaction
+```http
+DELETE /api/users/:id/hard
+```
+
+Permanently removes the user from the database. Cannot be undone.
+
+---
+
+### Restore user
+
+```http
+PATCH /api/users/:id/restore
+```
+
+Restores a soft-deleted user (clears `deletedAt` and reactivates).
+
+---
+
+## Transactions
+
+### Create transaction
 
 ```http
 POST /api/transactions
@@ -258,7 +332,7 @@ Body:
 
 ```json
 {
-  "userId": "USER_UUID",
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
   "name": "Salary",
   "amount": 3500.5,
   "description": "Monthly salary",
@@ -266,6 +340,75 @@ Body:
   "transactionDate": "2026-05-27T15:30:00.000Z"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | UUID | ✅ | User who owns the transaction |
+| `name` | string | ✅ | Max 100 characters |
+| `amount` | number | ✅ | Positive, max 2 decimal places |
+| `description` | string | ❌ | Max 500 characters |
+| `type` | enum | ✅ | `income`, `expense`, or `investment` |
+| `transactionDate` | ISO datetime | ❌ | Defaults to current date |
+
+---
+
+### List transactions by user
+
+```http
+GET /api/transactions?userId=USER_UUID
+```
+
+| Query | Type | Required | Description |
+|-------|------|----------|-------------|
+| `userId` | UUID | ✅ | Filter transactions by user |
+
+---
+
+### Update transaction
+
+```http
+PATCH /api/transactions/:id
+```
+
+Body (at least one field required):
+
+```json
+{
+  "name": "Updated name",
+  "amount": 2500.0,
+  "type": "expense"
+}
+```
+
+---
+
+### Soft delete transaction
+
+```http
+DELETE /api/transactions/:id
+```
+
+Marks the transaction as deleted (sets `deletedAt`).
+
+---
+
+### Hard delete transaction (permanent)
+
+```http
+DELETE /api/transactions/:id/hard
+```
+
+Permanently removes the transaction from the database.
+
+---
+
+### Restore transaction
+
+```http
+PATCH /api/transactions/:id/restore
+```
+
+Restores a soft-deleted transaction (clears `deletedAt`).
 
 ---
 
@@ -305,14 +448,10 @@ Examples:
 # Future Improvements
 
 - JWT Authentication
-- Refresh Tokens
-- Docker
-- Automated Tests
-- Pagination
-- Filters
+- Pagination & Filters
 - Dashboard endpoints
-- CI/CD
 - Swagger Documentation
+- CI/CD
 
 ---
 
