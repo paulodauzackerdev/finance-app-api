@@ -1,6 +1,6 @@
 import { removePasswordFromUser } from '../../helpers/user.js'
 
-import { validateUserId } from '../../validators/user/index.js'
+import { userIdSchema } from '../../schemas/user/user.schema.js'
 
 import { UserNotFoundError } from '../../errors/user.js'
 
@@ -10,9 +10,9 @@ export class GetUserByIdUseCase {
   }
 
   async execute(userId) {
-    validateUserId(userId)
+    const validatedUserId = userIdSchema.parse(userId)
 
-    const user = await this.userRepository.findById(userId)
+    const user = await this.userRepository.findById(validatedUserId)
 
     if (!user) {
       throw new UserNotFoundError()

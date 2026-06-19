@@ -1,51 +1,18 @@
 import {
-  validateTransactionId,
-  validateTransactionName,
-  validateTransactionAmount,
-  validateTransactionType,
-  validateTransactionDate,
-  validateTransactionDescription
-} from '../../validators/transaction/index.js'
+  updateTransactionInputSchema,
+  transactionIdSchema
+} from '../../schemas/transaction/transaction.schema.js'
 
-import {
-  TransactionNotFoundError,
-  InvalidTransactionFieldError // ← importa o erro
-} from '../../errors/transaction.js'
-
-const ALLOWED_UPDATE_FIELDS = [
-  'name',
-  'amount',
-  'description',
-  'type',
-  'transactionDate'
-]
+import { TransactionNotFoundError } from '../../errors/transaction.js'
 
 export class UpdateTransactionUseCase {
   constructor(transactionRepository) {
     this.transactionRepository = transactionRepository
   }
 
-  validateAllowedFields(updateParams) {
-    const invalidFields = Object.keys(updateParams).filter(
-      (field) => !ALLOWED_UPDATE_FIELDS.includes(field)
-    )
-
-    if (invalidFields.length > 0) {
-      throw new InvalidTransactionFieldError(
-        invalidFields,
-        ALLOWED_UPDATE_FIELDS
-      )
-    }
-  }
-
   async execute(transactionId, updateParams) {
-    if (!updateParams || typeof updateParams !== 'object') {
-      throw new Error('Update parameters must be an object')
-    }
-
-    this.validateAllowedFields(updateParams)
-
-    const validatedId = validateTransactionId(transactionId)
+    const validatedId = transactionIdSchema.parse(transactionId)
+    const validatedData = updateTransactionInputSchema.parse(updateParams)
 
     const existingTransaction =
       await this.transactionRepository.findById(validatedId)
@@ -56,45 +23,41 @@ export class UpdateTransactionUseCase {
 
     const updatesToApply = {}
 
-    if (updateParams.name !== undefined) {
-      const validatedName = validateTransactionName(updateParams.name)
-      if (validatedName !== existingTransaction.name) {
-        updatesToApply.name = validatedName
-      }
+    if (
+      validatedData.name !== undefined &&
+      validatedData.name !== existingTransaction.name
+    ) {
+      updatesToApply.name = validatedData.name
     }
 
-    if (updateParams.amount !== undefined) {
-      const validatedAmount = validateTransactionAmount(updateParams.amount)
-      if (validatedAmount !== Number(existingTransaction.amount)) {
-        updatesToApply.amount = validatedAmount
-      }
+    if (
+      validatedData.amount !== undefined &&
+      validatedData.amount !== Number(existingTransaction.amount)
+    ) {
+      updatesToApply.amount = validatedData.amount
     }
 
-    if (updateParams.description !== undefined) {
-      const validatedDescription = validateTransactionDescription(
-        updateParams.description
-      )
-      if (validatedDescription !== existingTransaction.description) {
-        updatesToApply.description = validatedDescription
-      }
+    if (
+      validatedData.description !== undefined &&
+      validatedData.description !== existingTransaction.description
+    ) {
+      updatesToApply.description = validatedData.description
     }
 
-    if (updateParams.type !== undefined) {
-      const validatedType = validateTransactionType(updateParams.type)
-      if (validatedType !== existingTransaction.type) {
-        updatesToApply.type = validatedType
-      }
+    if (
+      validatedData.type !== undefined &&
+      validatedData.type !== existingTransaction.type
+    ) {
+      updatesToApply.type = validatedData.type
     }
 
-    if (updateParams.transactionDate !== undefined) {
-      const validatedDate = validateTransactionDate(
-        updateParams.transactionDate
-      )
+    if (validatedData.transactionDate !== undefined) {
+      const validatedDate = validatedData.transactionDate
       const existingDate = existingTransaction.transactionDate
         ? new Date(existingTransaction.transactionDate).toISOString()
         : null
 
-      if (validatedDate?.toISOString() !== existingDate) {
+      if (validatedDate !== existingDate) {
         updatesToApply.transactionDate = validatedDate
       }
     }
@@ -104,7 +67,7 @@ export class UpdateTransactionUseCase {
     }
 
     const updatedTransaction = await this.transactionRepository.update(
-      transactionId,
+      validatedId,
       updatesToApply
     )
 

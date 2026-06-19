@@ -5,11 +5,15 @@ export class GetTransactionsByUserIdController {
     this.getTransactionsByUserIdUseCase = getTransactionsByUserIdUseCase
   }
 
-  handle = async (req, res) => {
-    const { userId } = req.query
-    const transactions =
-      await this.getTransactionsByUserIdUseCase.execute(userId)
+  handle = async (req, res, next) => {
+    try {
+      const { userId } = req.query
+      const transactions =
+        await this.getTransactionsByUserIdUseCase.execute(userId)
 
-    return ok(res, transactions)
+      return ok(res, transactions)
+    } catch (error) {
+      next(error)
+    }
   }
 }

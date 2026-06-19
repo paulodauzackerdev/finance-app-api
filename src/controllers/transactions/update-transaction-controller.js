@@ -5,16 +5,20 @@ export class UpdateTransactionController {
     this.updateTransactionUseCase = updateTransactionUseCase
   }
 
-  handle = async (req, res) => {
-    const { id } = req.params
+  handle = async (req, res, next) => {
+    try {
+      const { id } = req.params
 
-    const updateParams = req.body
+      const updateParams = req.body
 
-    const updatedTransaction = await this.updateTransactionUseCase.execute(
-      id,
-      updateParams
-    )
+      const updatedTransaction = await this.updateTransactionUseCase.execute(
+        id,
+        updateParams
+      )
 
-    return ok(res, updatedTransaction)
+      return ok(res, updatedTransaction)
+    } catch (error) {
+      next(error)
+    }
   }
 }

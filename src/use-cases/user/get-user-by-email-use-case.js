@@ -1,6 +1,6 @@
 import { removePasswordFromUser } from '../../helpers/user.js'
 
-import { validateEmail } from '../../validators/user/validate-email.js'
+import { userDatabaseSchema } from '../../schemas/user/user.schema.js'
 
 import { UserNotFoundError } from '../../errors/user.js'
 
@@ -10,9 +10,9 @@ export class GetUserByEmailUseCase {
   }
 
   async execute(email) {
-    const normalizedEmail = validateEmail(email)
+    const validatedUserEmail = userDatabaseSchema.shape.email.parse(email)
 
-    const user = await this.userRepository.findByEmail(normalizedEmail)
+    const user = await this.userRepository.findByEmail(validatedUserEmail)
 
     if (!user) {
       throw new UserNotFoundError()

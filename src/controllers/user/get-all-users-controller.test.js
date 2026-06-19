@@ -6,14 +6,14 @@ describe('GetAllUsersController', () => {
     const expectedUsers = [
       {
         id: '550e8400-e29b-41d4-a716-446655440000',
-        first_name: 'Sarah',
-        last_name: 'Connor',
+        firstName: 'Sarah',
+        lastName: 'Connor',
         email: 'sarahconnor@resistance.com'
       },
       {
         id: '6ba7b810-9dad-11d1-80b4-00c04fd430c8',
-        first_name: 'John',
-        last_name: 'Connor',
+        firstName: 'John',
+        lastName: 'Connor',
         email: 'johnconnor@resistance.com'
       }
     ]

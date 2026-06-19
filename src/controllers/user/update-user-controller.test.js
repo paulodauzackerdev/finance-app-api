@@ -5,8 +5,8 @@ describe('UpdateUserController', () => {
     // Arrange
     const expectedUpdatedUser = {
       id: 1,
-      first_name: 'Sarah',
-      last_name: 'Connor Updated',
+      firstName: 'Sarah',
+      lastName: 'Connor Updated',
       email: 'sarahconnor@resistance.com'
     }
 
@@ -21,7 +21,7 @@ describe('UpdateUserController', () => {
         id: '1'
       },
       body: {
-        last_name: 'Connor Updated'
+        lastName: 'Connor Updated'
       }
     }
 
@@ -66,7 +66,7 @@ describe('UpdateUserController', () => {
         id: '999'
       },
       body: {
-        first_name: 'John'
+        firstName: 'John'
       }
     }
 

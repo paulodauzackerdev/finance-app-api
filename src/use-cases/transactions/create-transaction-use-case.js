@@ -1,11 +1,4 @@
-import { validateUserId } from '../../validators/user/index.js'
-import {
-  validateTransactionName,
-  validateTransactionAmount,
-  validateTransactionType,
-  validateTransactionDate,
-  validateTransactionDescription
-} from '../../validators/transaction/index.js'
+import { createTransactionInputSchema } from '../../schemas/transaction/transaction.schema.js'
 
 import { UserNotFoundError } from '../../errors/user.js'
 
@@ -15,27 +8,23 @@ export class CreateTransactionUseCase {
     this.userRepository = userRepository
   }
 
-  async execute({ userId, name, amount, description, type, transactionDate }) {
-    const validatedUserId = validateUserId(userId)
-    const validatedName = validateTransactionName(name)
-    const validatedAmount = validateTransactionAmount(amount)
-    const validatedType = validateTransactionType(type)
-    const validatedDate = validateTransactionDate(transactionDate)
-    const validatedDescription = validateTransactionDescription(description)
+  async execute(createParams) {
+    const { userId, name, amount, description, type, transactionDate } =
+      createTransactionInputSchema.parse(createParams)
 
-    const user = await this.userRepository.findById(validatedUserId)
+    const user = await this.userRepository.findById(userId)
 
     if (!user) {
       throw new UserNotFoundError()
     }
 
     const transaction = await this.transactionRepository.create({
-      userId: validatedUserId,
-      name: validatedName,
-      amount: validatedAmount,
-      description: validatedDescription,
-      type: validatedType,
-      transactionDate: validatedDate
+      userId,
+      name,
+      amount,
+      description,
+      type,
+      transactionDate
     })
 
     return transaction

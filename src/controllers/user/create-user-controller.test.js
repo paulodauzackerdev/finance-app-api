@@ -5,8 +5,8 @@ describe('CreateUserController', () => {
     // Arrange
     const expectedUserResponse = {
       id: '550e8400-e29b-41d4-a716-446655440000',
-      first_name: 'Sarah',
-      last_name: 'Connor',
+      firstName: 'Sarah',
+      lastName: 'Connor',
       email: 'sarahconnor@resistance.com'
     }
 
@@ -18,8 +18,8 @@ describe('CreateUserController', () => {
 
     const req = {
       body: {
-        first_name: 'Sarah',
-        last_name: 'Connor',
+        firstName: 'Sarah',
+        lastName: 'Connor',
         email: 'sarahconnor@resistance.com',
         password: '12345678'
       }
@@ -63,8 +63,8 @@ describe('CreateUserController', () => {
 
     const req = {
       body: {
-        first_name: 'Sarah',
-        last_name: 'Connor',
+        firstName: 'Sarah',
+        lastName: 'Connor',
         email: 'sarahconnor@resistance.com',
         password: '12345678'
       }
