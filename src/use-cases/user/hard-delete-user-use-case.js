@@ -15,7 +15,10 @@ export class HardDeleteUserUseCase {
   async execute(userId) {
     const validatedUserId = userIdSchema.parse(userId)
 
-    const existingUser = await this.userRepository.findById(validatedUserId)
+    const existingUser = await this.userRepository.findById(
+      validatedUserId,
+      true
+    )
 
     if (!existingUser) {
       throw new UserNotFoundError()
@@ -25,7 +28,8 @@ export class HardDeleteUserUseCase {
       throw new ForbiddenUserDeletionError()
     }
 
-    const hardDeletedUser = await this.userRepository.hardDelete(userId)
+    const hardDeletedUser =
+      await this.userRepository.hardDelete(validatedUserId)
 
     if (!hardDeletedUser) {
       throw new UserNotFoundError()
