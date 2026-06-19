@@ -15,7 +15,8 @@ async function main() {
   if (!user) {
     console.log('👤 Criando usuário...')
 
-    const passwordHash = await bcrypt.hash('12345678', 12)
+    // Atende aos requisitos do schema: 8+ chars, maiúscula, minúscula, número, especial
+    const passwordHash = await bcrypt.hash('Admin@123', 12)
 
     user = await prisma.user.create({
       data: {
