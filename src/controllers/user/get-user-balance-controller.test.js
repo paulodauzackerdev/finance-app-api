@@ -16,7 +16,7 @@ describe('GetUserBalanceController', () => {
 
     const req = {
       params: {
-        userId: '1'
+        id: '1'
       }
     }
 
@@ -58,7 +58,7 @@ describe('GetUserBalanceController', () => {
 
     const req = {
       params: {
-        userId: '999'
+        id: '999'
       }
     }
 

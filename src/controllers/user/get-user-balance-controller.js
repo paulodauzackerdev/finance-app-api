@@ -7,8 +7,8 @@ export class GetUserBalanceController {
 
   handle = async (req, res, next) => {
     try {
-      const { userId } = req.params
-      const balance = await this.getUserBalanceUseCase.execute(userId)
+      const { id } = req.params
+      const balance = await this.getUserBalanceUseCase.execute(id)
       return ok(res, balance)
     } catch (error) {
       next(error)
