@@ -1,3 +1,5 @@
+import { ZodError } from 'zod'
+
 import {
   badRequest,
   conflict,
@@ -57,7 +59,19 @@ export const errorHandler = (error, req, res, _next) => {
     return conflict(res, error.message)
   }
 
-  // 400
+  // 400 - Zod validation errors
+  if (error instanceof ZodError) {
+    const details = error.errors.map((err) => ({
+      field: err.path.join('.'),
+      message: err.message
+    }))
+
+    return res.status(400).json({
+      error: 'Validation failed',
+      details
+    })
+  }
+
   if (
     error instanceof MissingUserFieldsError ||
     error instanceof InvalidNameError ||

@@ -6,6 +6,10 @@ export const created = (res, body) => {
   return res.status(201).json(body)
 }
 
+export const noContent = (res) => {
+  return res.status(204).end()
+}
+
 export const badRequest = (res, message) => {
   return res.status(400).json({
     error: message
