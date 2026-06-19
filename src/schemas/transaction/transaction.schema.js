@@ -51,8 +51,13 @@ export const updateTransactionInputSchema = z
     type: transactionTypeEnum.optional(),
     transactionDate: z.string().datetime({ offset: true }).optional()
   })
-  .refine((data) => Object.keys(data).length > 0, {
-    message: 'At least one field must be provided'
+  .superRefine((data, ctx) => {
+    if (Object.keys(data).length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'At least one field must be provided'
+      })
+    }
   })
 
 export const transactionIdSchema = z
