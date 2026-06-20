@@ -17,7 +17,7 @@ describe('HardDeleteTransactionController', () => {
     }
 
     const expectedResponse = {
-      message: 'Transaction hard deleted successfully',
+      message: 'Transaction permanently deleted successfully',
       transaction: expectedDeletedTransaction
     }
 
