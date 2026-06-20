@@ -1,8 +1,12 @@
 import { UpdateUserUseCase } from './update-user-use-case.js'
-import { hashPassword } from '../../helpers/password.js'
+import { passwordHelper } from '../../helpers/password.js'
 import { UserNotFoundError, UserAlreadyExistsError } from '../../errors/user.js'
 
-jest.mock('../../helpers/password.js')
+jest.mock('../../helpers/password.js', () => ({
+  passwordHelper: {
+    hash: jest.fn()
+  }
+}))
 
 describe('UpdateUserUseCase', () => {
   let updateUserUseCase
@@ -83,14 +87,14 @@ describe('UpdateUserUseCase', () => {
       const hashedPassword = 'hashed_password_123'
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
-      hashPassword.mockResolvedValue(hashedPassword)
+      passwordHelper.hash.mockResolvedValue(hashedPassword)
       mockUserRepository.update.mockResolvedValue(mockExistingUser)
 
       // Act
       await updateUserUseCase.execute(userId, updateParams)
 
       // Assert
-      expect(hashPassword).toHaveBeenCalledWith('NovaSenha123!')
+      expect(passwordHelper.hash).toHaveBeenCalledWith('NovaSenha123!')
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
         passwordHash: hashedPassword
       })

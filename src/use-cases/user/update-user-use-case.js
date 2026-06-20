@@ -1,6 +1,6 @@
 import { removePasswordFromUser } from '../../helpers/user.js'
 
-import { hashPassword } from '../../helpers/password.js'
+import { passwordHelper } from '../../helpers/password.js'
 
 import {
   updateUserInputSchema,
@@ -56,7 +56,9 @@ export class UpdateUserUseCase {
     }
 
     if (validatedData.password !== undefined) {
-      updatesToApply.passwordHash = await hashPassword(validatedData.password)
+      updatesToApply.passwordHash = await passwordHelper.hash(
+        validatedData.password
+      )
     }
 
     if (Object.keys(updatesToApply).length === 0) {

@@ -1,5 +1,5 @@
 import { removePasswordFromUser } from '../../helpers/user.js'
-import { hashPassword } from '../../helpers/password.js'
+import { passwordHelper } from '../../helpers/password.js'
 
 import { createUserInputSchema } from '../../schemas/user/user.schema.js'
 
@@ -19,7 +19,7 @@ export class CreateUserUseCase {
       throw new UserAlreadyExistsError()
     }
 
-    const passwordHash = await hashPassword(password)
+    const passwordHash = await passwordHelper.hash(password)
 
     const user = await this.userRepository.create({
       firstName,

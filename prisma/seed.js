@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client'
-import { hashPassword } from '../src/helpers/password.js'
+import { passwordHelper } from '../src/helpers/password.js'
 
 const prisma = new PrismaClient()
 
@@ -89,7 +89,7 @@ async function seed() {
   } else {
     console.log('👤 Criando usuário...')
 
-    const hash = await hashPassword(SEED_USER.password)
+    const hash = await passwordHelper.hash(SEED_USER.password)
 
     user = await prisma.user.create({
       data: {
