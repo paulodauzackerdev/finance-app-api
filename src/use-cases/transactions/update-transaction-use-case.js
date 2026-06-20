@@ -5,12 +5,6 @@ import {
 
 import { TransactionNotFoundError } from '../../errors/transaction.js'
 
-/**
- * Campos que exigem processamento especial (não são copiados diretamente).
- * Cada campo mapeia para uma função que recebe (valorValidado, transacaoExistente)
- * e retorna o par { chave, valor } a ser aplicado no update.
- * Se retornar null, o campo é pulado (nenhuma mudança).
- */
 const SPECIAL_FIELDS = {
   amount: (value, existingTransaction) => {
     if (value === Number(existingTransaction.amount)) return null

@@ -9,12 +9,6 @@ import {
 
 import { UserNotFoundError, UserAlreadyExistsError } from '../../errors/user.js'
 
-/**
- * Campos que exigem processamento especial (não são copiados diretamente).
- * Cada campo mapeia para uma função que recebe (valorValidado, usuarioExistente, repositorio)
- * e retorna o par { chave, valor } a ser aplicado no update.
- * Se retornar null, o campo é pulado (nenhuma mudança).
- */
 const SPECIAL_FIELDS = {
   password: async (value) => ({
     key: 'passwordHash',
