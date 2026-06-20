@@ -9,6 +9,30 @@ import {
 
 import { UserNotFoundError, UserAlreadyExistsError } from '../../errors/user.js'
 
+/**
+ * Campos que exigem processamento especial (não são copiados diretamente).
+ * Cada campo mapeia para uma função que recebe (valorValidado, usuarioExistente, repositorio)
+ * e retorna o par { chave, valor } a ser aplicado no update.
+ * Se retornar null, o campo é pulado (nenhuma mudança).
+ */
+const SPECIAL_FIELDS = {
+  password: async (value) => ({
+    key: 'passwordHash',
+    value: await passwordHelper.hash(value)
+  }),
+  email: async (value, existingUser, userRepository) => {
+    if (value === existingUser.email) return null
+
+    const emailAlreadyExists = await userRepository.findByEmail(value)
+
+    if (emailAlreadyExists && emailAlreadyExists.id !== existingUser.id) {
+      throw new UserAlreadyExistsError()
+    }
+
+    return { key: 'email', value }
+  }
+}
+
 export class UpdateUserUseCase {
   constructor(userRepository) {
     this.userRepository = userRepository
@@ -26,39 +50,20 @@ export class UpdateUserUseCase {
 
     const updatesToApply = {}
 
-    if (
-      validatedData.firstName !== undefined &&
-      validatedData.firstName !== existingUser.firstName
-    ) {
-      updatesToApply.firstName = validatedData.firstName
-    }
+    for (const [key, value] of Object.entries(validatedData)) {
+      if (SPECIAL_FIELDS[key]) {
+        const result = await SPECIAL_FIELDS[key](
+          value,
+          existingUser,
+          this.userRepository
+        )
 
-    if (
-      validatedData.lastName !== undefined &&
-      validatedData.lastName !== existingUser.lastName
-    ) {
-      updatesToApply.lastName = validatedData.lastName
-    }
-
-    if (
-      validatedData.email !== undefined &&
-      validatedData.email !== existingUser.email
-    ) {
-      const emailAlreadyExists = await this.userRepository.findByEmail(
-        validatedData.email
-      )
-
-      if (emailAlreadyExists && emailAlreadyExists.id !== existingUser.id) {
-        throw new UserAlreadyExistsError()
+        if (result !== null) {
+          updatesToApply[result.key] = result.value
+        }
+      } else if (value !== existingUser[key]) {
+        updatesToApply[key] = value
       }
-
-      updatesToApply.email = validatedData.email
-    }
-
-    if (validatedData.password !== undefined) {
-      updatesToApply.passwordHash = await passwordHelper.hash(
-        validatedData.password
-      )
     }
 
     if (Object.keys(updatesToApply).length === 0) {

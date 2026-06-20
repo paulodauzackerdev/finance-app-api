@@ -5,6 +5,29 @@ import {
 
 import { TransactionNotFoundError } from '../../errors/transaction.js'
 
+/**
+ * Campos que exigem processamento especial (não são copiados diretamente).
+ * Cada campo mapeia para uma função que recebe (valorValidado, transacaoExistente)
+ * e retorna o par { chave, valor } a ser aplicado no update.
+ * Se retornar null, o campo é pulado (nenhuma mudança).
+ */
+const SPECIAL_FIELDS = {
+  amount: (value, existingTransaction) => {
+    if (value === Number(existingTransaction.amount)) return null
+
+    return { key: 'amount', value }
+  },
+  transactionDate: (value, existingTransaction) => {
+    const existingDate = existingTransaction.transactionDate
+      ? new Date(existingTransaction.transactionDate).toISOString()
+      : null
+
+    if (value === existingDate) return null
+
+    return { key: 'transactionDate', value }
+  }
+}
+
 export class UpdateTransactionUseCase {
   constructor(transactionRepository) {
     this.transactionRepository = transactionRepository
@@ -23,42 +46,15 @@ export class UpdateTransactionUseCase {
 
     const updatesToApply = {}
 
-    if (
-      validatedData.name !== undefined &&
-      validatedData.name !== existingTransaction.name
-    ) {
-      updatesToApply.name = validatedData.name
-    }
+    for (const [key, value] of Object.entries(validatedData)) {
+      if (SPECIAL_FIELDS[key]) {
+        const result = SPECIAL_FIELDS[key](value, existingTransaction)
 
-    if (
-      validatedData.amount !== undefined &&
-      validatedData.amount !== Number(existingTransaction.amount)
-    ) {
-      updatesToApply.amount = validatedData.amount
-    }
-
-    if (
-      validatedData.description !== undefined &&
-      validatedData.description !== existingTransaction.description
-    ) {
-      updatesToApply.description = validatedData.description
-    }
-
-    if (
-      validatedData.type !== undefined &&
-      validatedData.type !== existingTransaction.type
-    ) {
-      updatesToApply.type = validatedData.type
-    }
-
-    if (validatedData.transactionDate !== undefined) {
-      const validatedDate = validatedData.transactionDate
-      const existingDate = existingTransaction.transactionDate
-        ? new Date(existingTransaction.transactionDate).toISOString()
-        : null
-
-      if (validatedDate !== existingDate) {
-        updatesToApply.transactionDate = validatedDate
+        if (result !== null) {
+          updatesToApply[result.key] = result.value
+        }
+      } else if (value !== existingTransaction[key]) {
+        updatesToApply[key] = value
       }
     }
 
