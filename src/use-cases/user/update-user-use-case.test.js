@@ -145,6 +145,25 @@ describe('UpdateUserUseCase', () => {
       ).rejects.toThrow() // ZodError (at least one field)
     })
 
+    test('deve pular campos que não mudaram mesmo quando enviados (OCP - diff automático)', async () => {
+      // Arrange
+      const userId = mockExistingUser.id
+      const updateParams = {
+        firstName: mockExistingUser.firstName,
+        lastName: mockExistingUser.lastName,
+        email: mockExistingUser.email
+      }
+
+      mockUserRepository.findById.mockResolvedValue(mockExistingUser)
+
+      // Act
+      const result = await updateUserUseCase.execute(userId, updateParams)
+
+      // Assert
+      expect(mockUserRepository.update).not.toHaveBeenCalled()
+      expect(result).toEqual(expect.objectContaining(mockExistingUser))
+    })
+
     test('deve atualizar múltiplos campos simultaneamente', async () => {
       // Arrange
       const userId = mockExistingUser.id
