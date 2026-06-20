@@ -1,7 +1,6 @@
 import { ZodError } from 'zod'
 
 import {
-  badRequest,
   conflict,
   forbidden,
   internalServerError,
@@ -11,25 +10,10 @@ import {
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
-  InvalidNameError,
-  InvalidLastNameError,
-  InvalidEmailError,
-  WeakPasswordError,
-  InvalidUserIdError,
-  InvalidIsActiveError,
-  ForbiddenUserDeletionError,
-  MissingUserFieldsError,
-  InvalidUpdateFieldError
+  ForbiddenUserDeletionError
 } from '../errors/user.js'
 
 import {
-  InvalidTransactionIdError,
-  InvalidTransactionNameError,
-  InvalidTransactionAmountError,
-  InvalidTransactionTypeError,
-  InvalidTransactionDateError,
-  InvalidTransactionDescriptionError,
-  InvalidTransactionFieldError,
   TransactionNotFoundError,
   TransactionUnauthorizedError
 } from '../errors/transaction.js'
@@ -61,7 +45,7 @@ export const errorHandler = (error, req, res, _next) => {
 
   // 400 - Zod validation errors
   if (error instanceof ZodError) {
-    const details = error.errors.map((err) => ({
+    const details = error.issues.map((err) => ({
       field: err.path.join('.'),
       message: err.message
     }))
@@ -70,26 +54,6 @@ export const errorHandler = (error, req, res, _next) => {
       error: 'Validation failed',
       details
     })
-  }
-
-  if (
-    error instanceof MissingUserFieldsError ||
-    error instanceof InvalidNameError ||
-    error instanceof InvalidLastNameError ||
-    error instanceof InvalidEmailError ||
-    error instanceof WeakPasswordError ||
-    error instanceof InvalidUserIdError ||
-    error instanceof InvalidIsActiveError ||
-    error instanceof InvalidUpdateFieldError ||
-    error instanceof InvalidTransactionIdError ||
-    error instanceof InvalidTransactionFieldError ||
-    error instanceof InvalidTransactionNameError ||
-    error instanceof InvalidTransactionAmountError ||
-    error instanceof InvalidTransactionTypeError ||
-    error instanceof InvalidTransactionDateError ||
-    error instanceof InvalidTransactionDescriptionError
-  ) {
-    return badRequest(res, error.message)
   }
 
   // 500
