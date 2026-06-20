@@ -155,4 +155,16 @@ export class TransactionRepository {
       }
     })
   }
+
+  async findDeletedByUserId(userId) {
+    return prisma.transaction.findMany({
+      where: {
+        userId,
+        deletedAt: { not: null }
+      },
+      orderBy: {
+        deletedAt: 'desc'
+      }
+    })
+  }
 }
