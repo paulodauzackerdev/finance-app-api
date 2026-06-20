@@ -13,7 +13,7 @@ export class HardDeleteTransactionController {
         await this.hardDeleteTransactionUseCase.execute(id)
 
       return ok(res, {
-        message: 'Transaction hard deleted successfully',
+        message: 'Transaction permanently deleted successfully',
         transaction: deletedTransaction
       })
     } catch (error) {
