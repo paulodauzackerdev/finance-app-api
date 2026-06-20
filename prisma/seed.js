@@ -1,66 +1,113 @@
 import { PrismaClient } from '@prisma/client'
-import bcrypt from 'bcrypt'
+import { hashPassword } from '../src/helpers/password.js'
 
 const prisma = new PrismaClient()
 
-async function main() {
-  console.log('🌱 Iniciando seed...')
+const SEED_USER = {
+  firstName: 'Admin',
+  lastName: 'User',
+  email: 'admin@localhost.com',
+  password: 'Admin@123',
+  isActive: true
+}
 
-  const email = 'admin@localhost.com'
+const SEED_TRANSACTIONS = [
+  {
+    name: 'Salário mensal',
+    amount: 5000.0,
+    description: 'Entrada principal do mês',
+    type: 'income',
+    transactionDate: new Date('2026-06-01')
+  },
+  {
+    name: 'Supermercado',
+    amount: 1000.0,
+    description: 'Compras do mês',
+    type: 'expense',
+    transactionDate: new Date('2026-06-05')
+  },
+  {
+    name: 'Bitcoin',
+    amount: 1000.0,
+    description: 'Investimento inicial',
+    type: 'investment',
+    transactionDate: new Date('2026-06-10')
+  },
+  {
+    name: 'Aluguel',
+    amount: 1500.0,
+    description: 'Aluguel do apartamento',
+    type: 'expense',
+    transactionDate: new Date('2026-06-03')
+  },
+  {
+    name: 'Freela',
+    amount: 2000.0,
+    description: 'Projeto de consultoria',
+    type: 'income',
+    transactionDate: new Date('2026-06-15')
+  }
+]
 
-  let user = await prisma.user.findUnique({
-    where: { email }
+async function undo() {
+  console.log('🗑️  Desfazendo seed...')
+
+  const user = await prisma.user.findUnique({
+    where: { email: SEED_USER.email }
   })
 
   if (!user) {
+    console.log('⚠️  Nenhum dado encontrado para desfazer.')
+    return
+  }
+
+  const transactionNames = SEED_TRANSACTIONS.map((t) => t.name)
+  const { count: deletedTransactions } = await prisma.transaction.deleteMany({
+    where: {
+      userId: user.id,
+      name: { in: transactionNames }
+    }
+  })
+
+  console.log(`🗑️  ${deletedTransactions} transações removidas`)
+
+  await prisma.user.delete({ where: { id: user.id } })
+  console.log('🗑️  Usuário seed removido')
+
+  console.log('✅ Seed desfeita com sucesso!')
+}
+
+async function seed() {
+  console.log('🌱 Iniciando seed...')
+
+  let user = await prisma.user.findUnique({
+    where: { email: SEED_USER.email }
+  })
+
+  if (user) {
+    console.log(`👤 Usuário já existe (ID: ${user.id}), pulando criação`)
+  } else {
     console.log('👤 Criando usuário...')
 
-    // Atende aos requisitos do schema: 8+ chars, maiúscula, minúscula, número, especial
-    const passwordHash = await bcrypt.hash('Admin@123', 12)
+    const hash = await hashPassword(SEED_USER.password)
 
     user = await prisma.user.create({
       data: {
-        firstName: 'Admin',
-        lastName: 'User',
-        email,
-        passwordHash,
-        isActive: true
+        firstName: SEED_USER.firstName,
+        lastName: SEED_USER.lastName,
+        email: SEED_USER.email,
+        passwordHash: hash,
+        isActive: SEED_USER.isActive
       }
     })
 
     console.log(`✅ Usuário criado (ID: ${user.id})`)
-  } else {
-    console.log(`👤 Usuário já existe (ID: ${user.id})`)
   }
-
-  const transactionsData = [
-    {
-      name: 'Salário mensal',
-      amount: 5000.0,
-      description: 'Entrada principal do mês',
-      type: 'income',
-      transactionDate: new Date('2026-06-01')
-    },
-    {
-      name: 'Supermercado',
-      amount: 1000.0,
-      description: 'Compras do mês',
-      type: 'expense',
-      transactionDate: new Date('2026-06-05')
-    },
-    {
-      name: 'Bitcoin',
-      amount: 1000.0,
-      description: 'Investimento inicial',
-      type: 'investment',
-      transactionDate: new Date('2026-06-10')
-    }
-  ]
 
   let createdCount = 0
   let existingCount = 0
 
-  for (const transData of transactionsData) {
+  for (const transData of SEED_TRANSACTIONS) {
     const existing = await prisma.transaction.findFirst({
       where: {
         userId: user.id,
@@ -73,7 +120,11 @@ async function main() {
       await prisma.transaction.create({
         data: {
           userId: user.id,
-          ...transData
+          name: transData.name,
+          amount: transData.amount,
+          description: transData.description,
+          type: transData.type,
+          transactionDate: transData.transactionDate
         }
       })
       createdCount++
@@ -97,6 +148,9 @@ async function main() {
   console.log('🎉 Seed finalizada')
 }
 
+const shouldUndo =
+  process.argv.includes('--undo') || process.argv.includes('-u')
+
 main()
   .catch((e) => {
     console.error('❌ Erro na seed:', e)
@@ -105,3 +159,11 @@ main()
   .finally(async () => {
     await prisma.$disconnect()
   })
+
+async function main() {
+  if (shouldUndo) {
+    await undo()
+  } else {
+    await seed()
+  }
+}
