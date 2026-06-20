@@ -181,6 +181,9 @@ export class UserRepository {
         lastName: true,
         email: true,
         deletedAt: true
+      },
+      orderBy: {
+        deletedAt: 'desc'
       }
     })
   }
