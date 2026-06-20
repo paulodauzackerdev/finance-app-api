@@ -6,6 +6,8 @@ import { makeUpdateTransactionController } from '../factories/transactions/make-
 import { makeHardDeleteTransactionController } from '../factories/transactions/make-hard-delete-transaction-controller.js'
 import { makeSoftDeleteTransactionController } from '../factories/transactions/make-soft-delete-transaction-controller.js'
 import { makeRestoreTransactionController } from '../factories/transactions/make-restore-transaction-controller.js'
+import { makeGetDeletedTransactionsController } from '../factories/transactions/make-get-deleted-transactions-controller.js'
+import { makeGetDeletedTransactionsByUserIdController } from '../factories/transactions/make-get-deleted-transactions-by-user-id-controller.js'
 
 const transactionsRoutes = Router()
 
@@ -16,10 +18,20 @@ const updateTransactionController = makeUpdateTransactionController()
 const hardDeleteTransactionController = makeHardDeleteTransactionController()
 const softDeleteTransactionController = makeSoftDeleteTransactionController()
 const restoreTransactionController = makeRestoreTransactionController()
+const getDeletedTransactionsController = makeGetDeletedTransactionsController()
+const getDeletedTransactionsByUserIdController =
+  makeGetDeletedTransactionsByUserIdController()
 
 transactionsRoutes.post('/', createTransactionController.handle)
 
 transactionsRoutes.get('/', getTransactionsByUserIdController.handle)
+
+transactionsRoutes.get('/deleted', getDeletedTransactionsController.handle)
+
+transactionsRoutes.get(
+  '/deleted/:userId',
+  getDeletedTransactionsByUserIdController.handle
+)
 
 transactionsRoutes.patch('/:id', updateTransactionController.handle)
 
