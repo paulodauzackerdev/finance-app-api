@@ -1,44 +1,3 @@
-export class InvalidTransactionIdError extends Error {
-  constructor(message = 'Invalid transaction ID') {
-    super(message)
-    this.name = 'InvalidTransactionIdError'
-  }
-}
-export class InvalidTransactionNameError extends Error {
-  constructor(message = 'Invalid transaction name') {
-    super(message)
-    this.name = 'InvalidTransactionNameError'
-  }
-}
-
-export class InvalidTransactionAmountError extends Error {
-  constructor(message = 'Invalid transaction amount') {
-    super(message)
-    this.name = 'InvalidTransactionAmountError'
-  }
-}
-
-export class InvalidTransactionTypeError extends Error {
-  constructor(message = 'Invalid transaction type') {
-    super(message)
-    this.name = 'InvalidTransactionTypeError'
-  }
-}
-
-export class InvalidTransactionDateError extends Error {
-  constructor(message = 'Invalid transaction date') {
-    super(message)
-    this.name = 'InvalidTransactionDateError'
-  }
-}
-
-export class InvalidTransactionDescriptionError extends Error {
-  constructor(message = 'Invalid transaction description') {
-    super(message)
-    this.name = 'InvalidTransactionDescriptionError'
-  }
-}
-
 export class TransactionNotFoundError extends Error {
   constructor(message = 'Transaction not found') {
     super(message)
@@ -50,15 +9,5 @@ export class TransactionUnauthorizedError extends Error {
   constructor(message = 'You are not authorized to access this transaction') {
     super(message)
     this.name = 'TransactionUnauthorizedError'
-  }
-}
-export class InvalidTransactionFieldError extends Error {
-  constructor(invalidFields, allowedFields) {
-    super(
-      `Invalid update fields: ${invalidFields.join(', ')}. Allowed fields are: ${allowedFields.join(', ')}`
-    )
-    this.name = 'InvalidTransactionFieldError'
-    this.invalidFields = invalidFields
-    this.allowedFields = allowedFields
   }
 }

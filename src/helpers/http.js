@@ -16,12 +16,6 @@ export const badRequest = (res, message) => {
   })
 }
 
-export const unauthorized = (res, message) => {
-  return res.status(401).json({
-    error: message
-  })
-}
-
 export const forbidden = (res, message) => {
   return res.status(403).json({
     error: message
