@@ -12,6 +12,7 @@ This project was created to study and apply backend engineering concepts such as
 - RESTful APIs
 - PostgreSQL integration
 - Scalable folder organization
+- Interactive API documentation
 
 ---
 
@@ -25,6 +26,7 @@ This project was created to study and apply backend engineering concepts such as
 - Zod (validation)
 - Bcrypt
 - Dotenv
+- Scalar (API reference)
 
 ---
 
@@ -80,6 +82,18 @@ Repositories are injected into use cases, allowing easy replacement between:
 - MongoDB
 - Fake repositories
 - Future ORM implementations
+
+---
+
+# Interactive Documentation
+
+The API provides an interactive documentation page powered by **Scalar** (a modern alternative to Swagger UI):
+
+```
+http://localhost:8000/docs
+```
+
+The OpenAPI 3.0 specification is located at [`src/docs/openapi.js`](src/docs/openapi.js), covering all endpoints, request/response schemas, and error codes.
 
 ---
 
@@ -450,7 +464,6 @@ Examples:
 - JWT Authentication
 - Pagination & Filters
 - Dashboard endpoints
-- Swagger Documentation
 - CI/CD
 
 ---
