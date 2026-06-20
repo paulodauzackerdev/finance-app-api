@@ -560,10 +560,15 @@ export const openApiSpec = {
             format: 'email',
             example: 'sarah@resistance.com'
           },
-          isActive: { type: 'boolean', example: true },
+          isActive: { type: 'boolean', example: false },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
-          deletedAt: { type: 'string', format: 'date-time', nullable: true }
+          deletedAt: {
+            type: 'string',
+            format: 'date-time',
+            nullable: true,
+            example: '2026-06-20T18:49:08.459Z'
+          }
         }
       },
       DeletedUserResponse: {

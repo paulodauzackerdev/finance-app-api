@@ -129,13 +129,14 @@ export class UserRepository {
       },
       data: {
         deletedAt: new Date(),
-        isActive: false // Opcional: desativar também
+        isActive: false
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
+        isActive: true,
         deletedAt: true
       }
     })
