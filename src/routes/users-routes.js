@@ -7,6 +7,7 @@ import { makeGetUserByEmailController } from '../factories/users/make-get-user-b
 import { makeUpdateUserController } from '../factories/users/make-update-user-controller.js'
 import { makeSoftDeleteUserController } from '../factories/users/make-soft-delete-user-controller.js'
 import { makeHardDeleteUserController } from '../factories/users/make-hard-delete-user-controller.js'
+import { makeGetDeletedUsersController } from '../factories/users/make-get-deleted-users-controller.js'
 import { makeGetUserBalanceController } from '../factories/users/make-get-user-balance-controller.js'
 import { makeRestoreUserController } from '../factories/users/make-restore-user-controller.js'
 
@@ -19,19 +20,23 @@ const getUserByEmailController = makeGetUserByEmailController()
 const updateUserController = makeUpdateUserController()
 const deleteUserController = makeSoftDeleteUserController()
 const hardDeleteUserController = makeHardDeleteUserController()
+const getDeletedUsersController = makeGetDeletedUsersController()
 const getUserBalanceController = makeGetUserBalanceController()
 const restoreUserController = makeRestoreUserController()
 
 usersRoutes.get('/', getAllUsersController.handle)
 usersRoutes.post('/', createUserController.handle)
+
 usersRoutes.get('/email/:email', getUserByEmailController.handle)
 
+usersRoutes.get('/deleted', getDeletedUsersController.handle)
+
 usersRoutes.get('/:id/balance', getUserBalanceController.handle)
+usersRoutes.delete('/:id/hard', hardDeleteUserController.handle)
+usersRoutes.patch('/:id/restore', restoreUserController.handle)
 
 usersRoutes.get('/:id', getUserByIdController.handle)
 usersRoutes.patch('/:id', updateUserController.handle)
 usersRoutes.delete('/:id', deleteUserController.handle)
-usersRoutes.delete('/:id/hard', hardDeleteUserController.handle)
-usersRoutes.patch('/:id/restore', restoreUserController.handle)
 
 export { usersRoutes }
