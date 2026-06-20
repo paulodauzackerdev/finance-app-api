@@ -7,7 +7,7 @@
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watch --passWithNoTests",
-    "postinstall": "npx husky init && npx prisma generate",
+    "postinstall": "npx prisma generate",
     "start:dev": "node --watch index.js",
     "dev": "nodemon src/server.js",
     "lint": "eslint .",
