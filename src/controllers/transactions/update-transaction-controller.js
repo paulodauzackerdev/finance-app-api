@@ -16,7 +16,10 @@ export class UpdateTransactionController {
         updateParams
       )
 
-      return ok(res, updatedTransaction)
+      return ok(res, {
+        message: 'Transaction updated successfully',
+        transaction: updatedTransaction
+      })
     } catch (error) {
       next(error)
     }
