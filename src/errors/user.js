@@ -12,6 +12,15 @@ export class UserAlreadyExistsError extends Error {
   }
 }
 
+export class UserDeletedError extends Error {
+  constructor(
+    message = 'This account has been deactivated and can be restored'
+  ) {
+    super(message)
+    this.name = 'UserDeletedError'
+  }
+}
+
 export class ForbiddenUserDeletionError extends Error {
   constructor(message = 'Cannot delete this user') {
     super(message)
