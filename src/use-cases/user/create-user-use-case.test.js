@@ -1,6 +1,6 @@
 import { CreateUserUseCase } from './create-user-use-case.js'
 import { passwordHelper } from '../../helpers/password.js'
-import { UserAlreadyExistsError } from '../../errors/user.js'
+import { UserAlreadyExistsError, UserDeletedError } from '../../errors/user.js'
 
 jest.mock('../../helpers/password.js', () => ({
   passwordHelper: {
@@ -30,6 +30,11 @@ describe('CreateUserUseCase', () => {
     updatedAt: new Date('2026-01-01')
   }
 
+  const deletedUser = {
+    ...createdUser,
+    deletedAt: new Date('2026-06-01')
+  }
+
   beforeEach(() => {
     mockUserRepository = {
       findByEmail: jest.fn(),
@@ -52,7 +57,8 @@ describe('CreateUserUseCase', () => {
 
       // Assert
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        validUserParams.email
+        validUserParams.email,
+        true
       )
       expect(passwordHelper.hash).toHaveBeenCalledWith(validUserParams.password)
       expect(mockUserRepository.create).toHaveBeenCalledWith({
@@ -65,7 +71,7 @@ describe('CreateUserUseCase', () => {
       expect(result.passwordHash).toBeUndefined()
     })
 
-    test('deve lançar UserAlreadyExistsError quando email já existe', async () => {
+    test('deve lançar UserAlreadyExistsError quando email já existe e está ativo', async () => {
       // Arrange
       mockUserRepository.findByEmail.mockResolvedValue(createdUser)
 
@@ -75,7 +81,25 @@ describe('CreateUserUseCase', () => {
       )
 
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        validUserParams.email
+        validUserParams.email,
+        true
+      )
+      expect(passwordHelper.hash).not.toHaveBeenCalled()
+      expect(mockUserRepository.create).not.toHaveBeenCalled()
+    })
+
+    test('deve lançar UserDeletedError quando email existe mas está soft-deletado', async () => {
+      // Arrange
+      mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
+
+      // Act & Assert
+      await expect(createUserUseCase.execute(validUserParams)).rejects.toThrow(
+        UserDeletedError
+      )
+
+      expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
+        validUserParams.email,
+        true
       )
       expect(passwordHelper.hash).not.toHaveBeenCalled()
       expect(mockUserRepository.create).not.toHaveBeenCalled()
@@ -114,23 +138,24 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve lançar UserAlreadyExistsError e não criar mesmo com email em maiúsculo (Zod lowercases)', async () => {
+    test('deve lançar UserDeletedError com email em maiúsculo (Zod lowercases) quando email está deletado', async () => {
       // Arrange
       const paramsWithUpperCaseEmail = {
         ...validUserParams,
         email: 'JOAO@EMAIL.COM'
       }
 
-      mockUserRepository.findByEmail.mockResolvedValue(createdUser)
+      mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
       // Act & Assert
       await expect(
         createUserUseCase.execute(paramsWithUpperCaseEmail)
-      ).rejects.toThrow(UserAlreadyExistsError)
+      ).rejects.toThrow(UserDeletedError)
 
       // O schema do Zod faz .toLowerCase() .trim(), então findByEmail recebe lowercase
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
-        'joao@email.com'
+        'joao@email.com',
+        true
       )
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
