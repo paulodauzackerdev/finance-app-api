@@ -3,7 +3,7 @@ import { passwordHelper } from '../../helpers/password.js'
 
 import { createUserInputSchema } from '../../schemas/user/user.schema.js'
 
-import { UserAlreadyExistsError } from '../../errors/user.js'
+import { UserAlreadyExistsError, UserDeletedError } from '../../errors/user.js'
 
 export class CreateUserUseCase {
   constructor(userRepository) {
@@ -14,8 +14,12 @@ export class CreateUserUseCase {
     const { firstName, lastName, email, password } =
       createUserInputSchema.parse(createParams)
 
-    const existingUser = await this.userRepository.findByEmail(email)
+    const existingUser = await this.userRepository.findByEmail(email, true)
+
     if (existingUser) {
+      if (existingUser.deletedAt) {
+        throw new UserDeletedError()
+      }
       throw new UserAlreadyExistsError()
     }
 
