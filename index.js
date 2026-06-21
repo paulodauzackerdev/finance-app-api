@@ -4,14 +4,15 @@ import { apiReference } from '@scalar/express-api-reference'
 
 import { usersRoutes } from './src/routes/users-routes.js'
 import { transactionsRoutes } from './src/routes/transactions-routes.js'
+
 import { errorHandler } from './src/middlewares/error-handler.js'
+
 import { openApiSpec } from './src/docs/openapi.js'
 
 const app = express()
 
 app.use(express.json())
 
-// Documentação interativa da API
 app.use(
   '/docs',
   apiReference({

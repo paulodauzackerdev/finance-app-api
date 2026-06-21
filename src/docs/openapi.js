@@ -7,7 +7,7 @@ export const openApiSpec = {
   },
   servers: [
     {
-      url: 'http://localhost:3000',
+      url: 'http://localhost:8000',
       description: 'Servidor de desenvolvimento'
     }
   ],
