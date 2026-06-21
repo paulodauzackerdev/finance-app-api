@@ -10,7 +10,8 @@ import {
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
-  ForbiddenUserDeletionError
+  ForbiddenUserDeletionError,
+  UserDeletedError
 } from '../errors/user.js'
 
 import {
@@ -39,7 +40,10 @@ export const errorHandler = (error, req, res, _next) => {
   }
 
   // 409
-  if (error instanceof UserAlreadyExistsError) {
+  if (
+    error instanceof UserAlreadyExistsError ||
+    error instanceof UserDeletedError
+  ) {
     return conflict(res, error.message)
   }
 
