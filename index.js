@@ -2,6 +2,8 @@ import express from 'express'
 import 'dotenv/config'
 import { apiReference } from '@scalar/express-api-reference'
 
+import helmet from 'helmet'
+
 import { usersRoutes } from './src/routes/users-routes.js'
 import { transactionsRoutes } from './src/routes/transactions-routes.js'
 
@@ -10,6 +12,8 @@ import { errorHandler } from './src/middlewares/error-handler.js'
 import { openApiSpec } from './src/docs/openapi.js'
 
 const app = express()
+
+app.use(helmet())
 
 app.use(express.json())
 
