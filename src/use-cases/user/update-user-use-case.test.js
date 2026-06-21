@@ -1,6 +1,10 @@
 import { UpdateUserUseCase } from './update-user-use-case.js'
 import { passwordHelper } from '../../helpers/password.js'
-import { UserNotFoundError, UserAlreadyExistsError } from '../../errors/user.js'
+import {
+  UserNotFoundError,
+  UserAlreadyExistsError,
+  UserDeletedError
+} from '../../errors/user.js'
 
 jest.mock('../../helpers/password.js', () => ({
   passwordHelper: {
@@ -78,6 +82,25 @@ describe('UpdateUserUseCase', () => {
       await expect(
         updateUserUseCase.execute(userId, updateParams)
       ).rejects.toThrow(UserAlreadyExistsError)
+    })
+
+    test('deve lançar UserDeletedError quando email existe mas está soft-deletado', async () => {
+      // Arrange
+      const userId = mockExistingUser.id
+      const updateParams = { email: 'deletado@email.com' }
+      const deletedUser = {
+        id: 'outro-id',
+        email: 'deletado@email.com',
+        deletedAt: new Date('2026-06-01')
+      }
+
+      mockUserRepository.findById.mockResolvedValue(mockExistingUser)
+      mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
+
+      // Act & Assert
+      await expect(
+        updateUserUseCase.execute(userId, updateParams)
+      ).rejects.toThrow(UserDeletedError)
     })
 
     test('deve atualizar senha com hash', async () => {
