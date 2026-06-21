@@ -7,7 +7,11 @@ import {
   userIdSchema
 } from '../../schemas/user/user.schema.js'
 
-import { UserNotFoundError, UserAlreadyExistsError } from '../../errors/user.js'
+import {
+  UserNotFoundError,
+  UserAlreadyExistsError,
+  UserDeletedError
+} from '../../errors/user.js'
 
 const SPECIAL_FIELDS = {
   password: async (value) => ({
@@ -17,9 +21,12 @@ const SPECIAL_FIELDS = {
   email: async (value, existingUser, userRepository) => {
     if (value === existingUser.email) return null
 
-    const emailAlreadyExists = await userRepository.findByEmail(value)
+    const emailAlreadyExists = await userRepository.findByEmail(value, true)
 
     if (emailAlreadyExists && emailAlreadyExists.id !== existingUser.id) {
+      if (emailAlreadyExists.deletedAt) {
+        throw new UserDeletedError()
+      }
       throw new UserAlreadyExistsError()
     }
 
