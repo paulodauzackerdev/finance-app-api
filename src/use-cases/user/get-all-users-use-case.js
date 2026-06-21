@@ -6,7 +6,7 @@ export class GetAllUsersUseCase {
   }
 
   async execute() {
-    const users = await this.userRepository.findDeleted()
+    const users = await this.userRepository.findAll()
 
     return users.map(removePasswordFromUser)
   }
