@@ -1,19 +1,14 @@
-import express from 'express'
-
 import 'dotenv/config'
-
-import { apiReference } from '@scalar/express-api-reference'
-
+import express from 'express'
 import helmet from 'helmet'
+
 import { globalLimiter } from './src/middlewares/rate-limiter.js'
 import { corsMiddleware } from './src/middlewares/cors.js'
-
-import { usersRoutes } from './src/routes/users-routes.js'
-import { transactionsRoutes } from './src/routes/transactions-routes.js'
-
 import { errorHandler } from './src/middlewares/error-handler.js'
 
-import { openApiSpec } from './src/docs/openapi.js'
+import { docsRoutes } from './src/routes/docs-routes.js'
+import { usersRoutes } from './src/routes/users-routes.js'
+import { transactionsRoutes } from './src/routes/transactions-routes.js'
 
 const app = express()
 
@@ -25,17 +20,8 @@ app.use(globalLimiter)
 
 app.use(express.json())
 
-app.use(
-  '/docs',
-  apiReference({
-    spec: {
-      content: openApiSpec
-    }
-  })
-)
-
+app.use('/docs', docsRoutes)
 app.use('/api/users', usersRoutes)
-
 app.use('/api/transactions', transactionsRoutes)
 
 app.use(errorHandler)
