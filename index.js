@@ -5,7 +5,7 @@ import 'dotenv/config'
 import { apiReference } from '@scalar/express-api-reference'
 
 import helmet from 'helmet'
-import rateLimit from 'express-rate-limit'
+import { globalLimiter } from './src/middlewares/rate-limiter.js'
 
 import { usersRoutes } from './src/routes/users-routes.js'
 import { transactionsRoutes } from './src/routes/transactions-routes.js'
@@ -18,15 +18,6 @@ const app = express()
 
 app.use(helmet())
 
-const globalLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 100,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    error: 'Too many requests, please try again later'
-  }
-})
 app.use(globalLimiter)
 
 app.use(express.json())
