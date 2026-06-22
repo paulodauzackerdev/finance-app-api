@@ -8,8 +8,10 @@ echo "========================================"
 echo "=> Rodando migrations..."
 npx prisma migrate deploy
 
-echo "=> Rodando seed..."
-node prisma/seed.js
+if [ "$NODE_ENV" = "development" ] || [ "$NODE_ENV" = "staging" ]; then
+  echo "=> Rodando seed..."
+  node prisma/seed.js
+fi
 
 echo "=> Iniciando a aplicação..."
 exec "$@"
