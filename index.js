@@ -6,6 +6,7 @@ import { apiReference } from '@scalar/express-api-reference'
 
 import helmet from 'helmet'
 import { globalLimiter } from './src/middlewares/rate-limiter.js'
+import { corsMiddleware } from './src/middlewares/cors.js'
 
 import { usersRoutes } from './src/routes/users-routes.js'
 import { transactionsRoutes } from './src/routes/transactions-routes.js'
@@ -17,6 +18,8 @@ import { openApiSpec } from './src/docs/openapi.js'
 const app = express()
 
 app.use(helmet())
+
+app.use(corsMiddleware)
 
 app.use(globalLimiter)
 
