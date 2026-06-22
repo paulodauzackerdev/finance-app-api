@@ -24,7 +24,9 @@ export class HardDeleteUserUseCase {
       throw new UserNotFoundError()
     }
 
-    if (existingUser.id === process.env.ADMIN_USER_ID) {
+    const adminUserId = process.env.ADMIN_USER_ID
+
+    if (adminUserId && existingUser.id === adminUserId) {
       throw new ForbiddenUserDeletionError()
     }
 
