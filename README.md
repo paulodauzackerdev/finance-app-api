@@ -27,6 +27,9 @@ This project was created to study and apply backend engineering concepts such as
 - Bcrypt
 - Dotenv
 - Scalar (API reference)
+- Helmet (security headers)
+- CORS
+- express-rate-limit
 
 ---
 
@@ -139,8 +142,7 @@ src/
 │   └── transactions/
 │
 ├── repositories/
-│   ├── postgres/
-│   └── fake/
+│   └── postgres/
 │
 ├── factories/
 │   ├── users/
@@ -148,10 +150,18 @@ src/
 │   └── repositories/
 │
 ├── middlewares/
+│   ├── error-handler.js
+│   ├── rate-limiter.js
+│   └── cors.js
+│
 ├── helpers/
 ├── errors/
+├── schemas/
+│   ├── user/
+│   └── transaction/
+│
 ├── routes/
-└── db/
+└── docs/
 ```
 
 ---
@@ -176,16 +186,23 @@ npm install
 
 # Environment Variables
 
-Create a `.env` file:
+Copy `.env.example` to `.env` and adjust the values:
+
+```bash
+cp .env.example .env
+```
 
 ```env
 PORT=8000
+NODE_ENV=development
 
 POSTGRES_HOST=localhost
 POSTGRES_PORT=5432
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your_password
-POSTGRES_DB=finance_app
+POSTGRES_USER=finance_user
+POSTGRES_PASSWORD=finance_pass
+POSTGRES_DB=financeapp
+
+DATABASE_URL=postgresql://finance_user:finance_pass@localhost:5432/financeapp
 ```
 
 ---
@@ -198,17 +215,42 @@ POSTGRES_DB=finance_app
 npm run start:dev
 ```
 
+## Docker (development)
+
+```bash
+docker compose up -d
+```
+
+## Docker (production)
+
+```bash
+# Edit docker-compose.yml, uncomment the api-prod service and run:
+docker compose --profile prod up -d
+```
+
 ---
 
-# Database Migration
+# Database
 
-Run your PostgreSQL migration script to create:
+## Migrations
 
-- users table
-- transactions table
-- indexes
-- triggers
-- enums
+```bash
+npm run prisma:migrate
+```
+
+## Seed
+
+```bash
+npm run seed
+```
+
+To undo seed:
+
+```bash
+npm run seed:undo
+```
+
+> In Docker, seed runs automatically in development and staging environments.
 
 ---
 
@@ -426,18 +468,36 @@ Restores a soft-deleted transaction (clears `deletedAt`).
 
 ---
 
+# Security
+
+## Helmet
+
+Adds HTTP security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`, etc.) to protect against common web vulnerabilities.
+
+## CORS
+
+Configured to allow requests only from allowed origins (default: `http://localhost:5173`).
+
+## Rate Limiting
+
+Global rate limit: 100 requests per minute per IP (configurable via `RATE_LIMIT_MAX` env var).
+
+---
+
 # Error Handling
 
-The API uses centralized error handling middleware.
+The API uses centralized error handling middleware with custom error classes:
 
-Examples:
-
-- Invalid email
-- Invalid UUID
-- Weak password
-- Transaction validation errors
-- Unauthorized access
-- Resource not found
+| Error | HTTP Status | Description |
+|-------|:-----------:|-------------|
+| `UserNotFoundError` | 404 | User not found |
+| `TransactionNotFoundError` | 404 | Transaction not found |
+| `InvalidCredentialsError` | 401 | Invalid email or password |
+| `ForbiddenUserDeletionError` | 403 | Cannot delete admin user |
+| `TransactionUnauthorizedError` | 403 | Cannot access another user's transaction |
+| `UserAlreadyExistsError` | 409 | Email already in use |
+| `UserDeletedError` | 409 | Account is deactivated and can be restored |
+| `ZodError` | 400 | Validation failed
 
 ---
 
@@ -462,9 +522,12 @@ Examples:
 # Future Improvements
 
 - JWT Authentication
+- Refresh token support
 - Pagination & Filters
 - Dashboard endpoints
-- CI/CD
+- CI/CD pipeline (GitHub Actions)
+- Transaction categories
+- Password reset flow
 
 ---
 
