@@ -31,6 +31,11 @@ export const errorHandler = (error, req, res, _next) => {
     return notFound(res, error.message)
   }
 
+  // 401
+  if (error.name === 'InvalidCredentialsError') {
+    return res.status(401).json({ error: error.message })
+  }
+
   // 403
   if (
     error instanceof ForbiddenUserDeletionError ||
