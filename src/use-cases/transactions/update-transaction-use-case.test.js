@@ -1,3 +1,5 @@
+import { faker } from '@faker-js/faker'
+import { ZodError } from 'zod'
 import { UpdateTransactionUseCase } from './update-transaction-use-case.js'
 import { TransactionNotFoundError } from '../../errors/transaction.js'
 
@@ -6,8 +8,8 @@ describe('UpdateTransactionUseCase', () => {
   let mockTransactionRepository
 
   const mockExistingTransaction = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
-    userId: '550e8400-e29b-41d4-a716-446655440000',
+    id: faker.string.uuid(),
+    userId: faker.string.uuid(),
     name: 'Salário',
     amount: 5000,
     description: 'Salário mensal',
@@ -28,8 +30,7 @@ describe('UpdateTransactionUseCase', () => {
   })
 
   describe('execute', () => {
-    test('deve atualizar nome da transação com sucesso', async () => {
-      // Arrange
+    it('should update transaction name successfully', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { name: 'Salário atualizado' }
 
@@ -41,13 +42,11 @@ describe('UpdateTransactionUseCase', () => {
         name: 'Salário atualizado'
       })
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.findById).toHaveBeenCalledWith(
         transactionId
       )
@@ -58,14 +57,12 @@ describe('UpdateTransactionUseCase', () => {
       expect(result.name).toBe('Salário atualizado')
     })
 
-    test('deve lançar TransactionNotFoundError quando transação não existe', async () => {
-      // Arrange
+    it('should throw TransactionNotFoundError when transaction does not exist', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { name: 'Novo nome' }
 
       mockTransactionRepository.findById.mockResolvedValue(null)
 
-      // Act & Assert
       await expect(
         updateTransactionUseCase.execute(transactionId, updateParams)
       ).rejects.toThrow(TransactionNotFoundError)
@@ -73,8 +70,7 @@ describe('UpdateTransactionUseCase', () => {
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
     })
 
-    test('deve retornar a mesma transação sem atualizar quando nenhum campo mudou', async () => {
-      // Arrange
+    it('should return same transaction without updating when no fields changed', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {
         name: mockExistingTransaction.name,
@@ -85,19 +81,16 @@ describe('UpdateTransactionUseCase', () => {
         mockExistingTransaction
       )
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingTransaction))
     })
 
-    test('deve atualizar amount com sucesso', async () => {
-      // Arrange
+    it('should update amount successfully', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { amount: 6000 }
 
@@ -109,13 +102,11 @@ describe('UpdateTransactionUseCase', () => {
         amount: 6000
       })
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).toHaveBeenCalledWith(
         transactionId,
         { amount: 6000 }
@@ -123,8 +114,7 @@ describe('UpdateTransactionUseCase', () => {
       expect(result.amount).toBe(6000)
     })
 
-    test('deve pular amount quando o valor é o mesmo (lidando com Number vs Decimal)', async () => {
-      // Arrange
+    it('should skip amount when value is the same (handling Number vs Decimal)', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { amount: 5000 }
 
@@ -132,19 +122,16 @@ describe('UpdateTransactionUseCase', () => {
         mockExistingTransaction
       )
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingTransaction))
     })
 
-    test('deve atualizar transactionDate com sucesso', async () => {
-      // Arrange
+    it('should update transactionDate successfully', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {
         transactionDate: '2026-07-01T00:00:00.000Z'
@@ -158,13 +145,11 @@ describe('UpdateTransactionUseCase', () => {
         transactionDate: '2026-07-01T00:00:00.000Z'
       })
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).toHaveBeenCalledWith(
         transactionId,
         { transactionDate: '2026-07-01T00:00:00.000Z' }
@@ -172,8 +157,7 @@ describe('UpdateTransactionUseCase', () => {
       expect(result.transactionDate).toBe('2026-07-01T00:00:00.000Z')
     })
 
-    test('deve pular transactionDate quando o valor é o mesmo (ISO comparado corretamente)', async () => {
-      // Arrange
+    it('should skip transactionDate when value is the same (ISO compared correctly)', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {
         transactionDate: '2026-06-01T00:00:00.000Z'
@@ -183,19 +167,16 @@ describe('UpdateTransactionUseCase', () => {
         mockExistingTransaction
       )
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingTransaction))
     })
 
-    test('deve atualizar descrição para null', async () => {
-      // Arrange
+    it('should update description to null', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { description: null }
 
@@ -207,13 +188,11 @@ describe('UpdateTransactionUseCase', () => {
         description: null
       })
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).toHaveBeenCalledWith(
         transactionId,
         { description: null }
@@ -221,8 +200,7 @@ describe('UpdateTransactionUseCase', () => {
       expect(result.description).toBeNull()
     })
 
-    test('deve atualizar múltiplos campos simultaneamente', async () => {
-      // Arrange
+    it('should update multiple fields simultaneously', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {
         name: 'Novo nome',
@@ -238,13 +216,11 @@ describe('UpdateTransactionUseCase', () => {
         ...updateParams
       })
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).toHaveBeenCalledWith(
         transactionId,
         {
@@ -258,8 +234,7 @@ describe('UpdateTransactionUseCase', () => {
       expect(result.type).toBe('expense')
     })
 
-    test('deve pular campos que não mudaram em atualização múltipla (OCP - diff automático)', async () => {
-      // Arrange
+    it('should skip fields that did not change in multi-field update (OCP - auto diff)', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {
         name: mockExistingTransaction.name,
@@ -271,47 +246,68 @@ describe('UpdateTransactionUseCase', () => {
         mockExistingTransaction
       )
 
-      // Act
       const result = await updateTransactionUseCase.execute(
         transactionId,
         updateParams
       )
 
-      // Assert
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingTransaction))
     })
 
-    test('deve validar UUID inválido com Zod', async () => {
-      // Arrange
+    it('should throw ZodError for invalid UUID', async () => {
       const invalidId = 'not-a-uuid'
       const updateParams = { name: 'Teste' }
 
-      // Act & Assert
       await expect(
         updateTransactionUseCase.execute(invalidId, updateParams)
-      ).rejects.toThrow() // ZodError
+      ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
     })
 
-    test('deve validar input vazio com Zod', async () => {
-      // Arrange
+    it('should throw ZodError for empty input', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = {}
 
-      // Act & Assert
       await expect(
         updateTransactionUseCase.execute(transactionId, updateParams)
-      ).rejects.toThrow() // ZodError (at least one field)
+      ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
     })
 
-    test('deve propagar erro se o repositório falhar', async () => {
-      // Arrange
+    it('should update transactionDate when existing transaction has no date', async () => {
+      const transactionId = mockExistingTransaction.id
+      const noDateTransaction = {
+        ...mockExistingTransaction,
+        transactionDate: null
+      }
+      const updateParams = {
+        transactionDate: '2026-07-01T00:00:00.000Z'
+      }
+
+      mockTransactionRepository.findById.mockResolvedValue(noDateTransaction)
+      mockTransactionRepository.update.mockResolvedValue({
+        ...noDateTransaction,
+        transactionDate: '2026-07-01T00:00:00.000Z'
+      })
+
+      const result = await updateTransactionUseCase.execute(
+        transactionId,
+        updateParams
+      )
+
+      expect(mockTransactionRepository.update).toHaveBeenCalledWith(
+        transactionId,
+        { transactionDate: '2026-07-01T00:00:00.000Z' }
+      )
+      expect(result.transactionDate).toBe('2026-07-01T00:00:00.000Z')
+    })
+
+    it('should propagate error if repository fails', async () => {
       const transactionId = mockExistingTransaction.id
       const updateParams = { name: 'Novo nome' }
       const dbError = new Error('Database connection failed')
@@ -321,7 +317,6 @@ describe('UpdateTransactionUseCase', () => {
       )
       mockTransactionRepository.update.mockRejectedValue(dbError)
 
-      // Act & Assert
       await expect(
         updateTransactionUseCase.execute(transactionId, updateParams)
       ).rejects.toThrow('Database connection failed')

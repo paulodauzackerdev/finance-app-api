@@ -1,3 +1,5 @@
+import { faker } from '@faker-js/faker'
+import { ZodError } from 'zod'
 import { UpdateUserUseCase } from './update-user-use-case.js'
 import { passwordHelper } from '../../helpers/password.js'
 import {
@@ -17,7 +19,7 @@ describe('UpdateUserUseCase', () => {
   let mockUserRepository
 
   const mockExistingUser = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: faker.string.uuid(),
     firstName: 'João',
     lastName: 'Silva',
     email: 'joao@email.com',
@@ -36,7 +38,7 @@ describe('UpdateUserUseCase', () => {
   })
 
   describe('execute', () => {
-    test('deve atualizar nome do usuário com sucesso', async () => {
+    it('should update user name successfully', async () => {
       const userId = mockExistingUser.id
       const updateParams = { firstName: 'João Carlos' }
 
@@ -56,40 +58,35 @@ describe('UpdateUserUseCase', () => {
       expect(result.passwordHash).toBeUndefined()
     })
 
-    test('deve lançar UserNotFoundError quando usuário não existe', async () => {
-      // Arrange
+    it('should throw UserNotFoundError when user does not exist', async () => {
       const userId = mockExistingUser.id
       const updateParams = { firstName: 'Novo Nome' }
 
       mockUserRepository.findById.mockResolvedValue(null)
 
-      // Act & Assert
       await expect(
         updateUserUseCase.execute(userId, updateParams)
       ).rejects.toThrow(UserNotFoundError)
     })
 
-    test('deve atualizar email e verificar conflito', async () => {
-      // Arrange
+    it('should throw UserAlreadyExistsError when email conflicts with another user', async () => {
       const userId = mockExistingUser.id
       const updateParams = { email: 'novo@email.com' }
-      const anotherUser = { id: 'outro-id', email: 'novo@email.com' }
+      const anotherUser = { id: faker.string.uuid(), email: 'novo@email.com' }
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
       mockUserRepository.findByEmail.mockResolvedValue(anotherUser)
 
-      // Act & Assert
       await expect(
         updateUserUseCase.execute(userId, updateParams)
       ).rejects.toThrow(UserAlreadyExistsError)
     })
 
-    test('deve lançar UserDeletedError quando email existe mas está soft-deletado', async () => {
-      // Arrange
+    it('should throw UserDeletedError when email exists but is soft-deleted', async () => {
       const userId = mockExistingUser.id
       const updateParams = { email: 'deletado@email.com' }
       const deletedUser = {
-        id: 'outro-id',
+        id: faker.string.uuid(),
         email: 'deletado@email.com',
         deletedAt: new Date('2026-06-01')
       }
@@ -97,14 +94,12 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
       mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
-      // Act & Assert
       await expect(
         updateUserUseCase.execute(userId, updateParams)
       ).rejects.toThrow(UserDeletedError)
     })
 
-    test('deve atualizar senha com hash', async () => {
-      // Arrange
+    it('should update password with hash', async () => {
       const userId = mockExistingUser.id
       const updateParams = { password: 'NovaSenha123!' }
       const hashedPassword = 'hashed_password_123'
@@ -113,18 +108,15 @@ describe('UpdateUserUseCase', () => {
       passwordHelper.hash.mockResolvedValue(hashedPassword)
       mockUserRepository.update.mockResolvedValue(mockExistingUser)
 
-      // Act
       await updateUserUseCase.execute(userId, updateParams)
 
-      // Assert
       expect(passwordHelper.hash).toHaveBeenCalledWith('NovaSenha123!')
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
         passwordHash: hashedPassword
       })
     })
 
-    test('deve retornar o mesmo usuário sem atualizar quando nenhum campo mudou', async () => {
-      // Arrange
+    it('should return same user without updating when no fields changed', async () => {
       const userId = mockExistingUser.id
       const updateParams = {
         firstName: mockExistingUser.firstName,
@@ -133,10 +125,8 @@ describe('UpdateUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
 
-      // Act
       const result = await updateUserUseCase.execute(userId, updateParams)
 
-      // Assert
       expect(mockUserRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(
         expect.objectContaining({
@@ -146,30 +136,25 @@ describe('UpdateUserUseCase', () => {
       )
     })
 
-    test('deve validar UUID inválido com Zod', async () => {
-      // Arrange
+    it('should throw ZodError for invalid UUID', async () => {
       const invalidUserId = 'not-a-uuid'
       const updateParams = { firstName: 'Teste' }
 
-      // Act & Assert
       await expect(
         updateUserUseCase.execute(invalidUserId, updateParams)
-      ).rejects.toThrow() // ZodError
+      ).rejects.toThrow(ZodError)
     })
 
-    test('deve validar input vazio com Zod', async () => {
-      // Arrange
+    it('should throw ZodError for empty input', async () => {
       const userId = mockExistingUser.id
       const updateParams = {}
 
-      // Act & Assert
       await expect(
         updateUserUseCase.execute(userId, updateParams)
-      ).rejects.toThrow() // ZodError (at least one field)
+      ).rejects.toThrow(ZodError)
     })
 
-    test('deve pular campos que não mudaram mesmo quando enviados (OCP - diff automático)', async () => {
-      // Arrange
+    it('should skip fields that did not change even when sent (OCP - auto diff)', async () => {
       const userId = mockExistingUser.id
       const updateParams = {
         firstName: mockExistingUser.firstName,
@@ -179,16 +164,13 @@ describe('UpdateUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
 
-      // Act
       const result = await updateUserUseCase.execute(userId, updateParams)
 
-      // Assert
       expect(mockUserRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingUser))
     })
 
-    test('deve atualizar múltiplos campos simultaneamente', async () => {
-      // Arrange
+    it('should update multiple fields simultaneously', async () => {
       const userId = mockExistingUser.id
       const updateParams = {
         firstName: 'Carlos',
@@ -203,10 +185,8 @@ describe('UpdateUserUseCase', () => {
         ...updateParams
       })
 
-      // Act
       const result = await updateUserUseCase.execute(userId, updateParams)
 
-      // Assert
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
         firstName: 'Carlos',
         lastName: 'Santos',
@@ -215,6 +195,19 @@ describe('UpdateUserUseCase', () => {
       expect(result.firstName).toBe('Carlos')
       expect(result.lastName).toBe('Santos')
       expect(result.email).toBe('carlos@email.com')
+    })
+
+    it('should propagate error if repository fails', async () => {
+      const userId = mockExistingUser.id
+      const updateParams = { firstName: 'Novo Nome' }
+      const dbError = new Error('Database connection failed')
+
+      mockUserRepository.findById.mockResolvedValue(mockExistingUser)
+      mockUserRepository.update.mockRejectedValue(dbError)
+
+      await expect(
+        updateUserUseCase.execute(userId, updateParams)
+      ).rejects.toThrow('Database connection failed')
     })
   })
 })

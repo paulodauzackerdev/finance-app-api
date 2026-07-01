@@ -1,3 +1,5 @@
+import { faker } from '@faker-js/faker'
+import { ZodError } from 'zod'
 import { CreateUserUseCase } from './create-user-use-case.js'
 import { passwordHelper } from '../../helpers/password.js'
 import { UserAlreadyExistsError, UserDeletedError } from '../../errors/user.js'
@@ -21,7 +23,7 @@ describe('CreateUserUseCase', () => {
 
   const hashedPassword = 'hashed_password_hash'
   const createdUser = {
-    id: '123e4567-e89b-12d3-a456-426614174000',
+    id: faker.string.uuid(),
     firstName: 'João',
     lastName: 'Silva',
     email: 'joao@email.com',
@@ -46,16 +48,13 @@ describe('CreateUserUseCase', () => {
   })
 
   describe('execute', () => {
-    test('deve criar usuário com sucesso', async () => {
-      // Arrange
+    it('should create a user successfully', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(null)
       passwordHelper.hash.mockResolvedValue(hashedPassword)
       mockUserRepository.create.mockResolvedValue(createdUser)
 
-      // Act
       const result = await createUserUseCase.execute(validUserParams)
 
-      // Assert
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         validUserParams.email,
         true
@@ -71,11 +70,9 @@ describe('CreateUserUseCase', () => {
       expect(result.passwordHash).toBeUndefined()
     })
 
-    test('deve lançar UserAlreadyExistsError quando email já existe e está ativo', async () => {
-      // Arrange
+    it('should throw UserAlreadyExistsError when email already exists and is active', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(createdUser)
 
-      // Act & Assert
       await expect(createUserUseCase.execute(validUserParams)).rejects.toThrow(
         UserAlreadyExistsError
       )
@@ -88,11 +85,9 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve lançar UserDeletedError quando email existe mas está soft-deletado', async () => {
-      // Arrange
+    it('should throw UserDeletedError when email exists but is soft-deleted', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
-      // Act & Assert
       await expect(createUserUseCase.execute(validUserParams)).rejects.toThrow(
         UserDeletedError
       )
@@ -105,41 +100,37 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve validar input com campos inválidos (Zod)', async () => {
-      // Arrange
+    it('should throw ZodError when input has invalid fields', async () => {
       const invalidParams = {
-        firstName: 'A', // muito curto
-        lastName: 'B', // muito curto
-        email: 'email-invalido',
-        password: 'fraca' // muito curta, sem maiúscula, número ou especial
+        firstName: 'A',
+        lastName: 'B',
+        email: 'invalid-email',
+        password: 'fraca'
       }
 
       mockUserRepository.findByEmail.mockResolvedValue(null)
 
-      // Act & Assert
-      await expect(createUserUseCase.execute(invalidParams)).rejects.toThrow() // ZodError
+      await expect(createUserUseCase.execute(invalidParams)).rejects.toThrow(
+        ZodError
+      )
 
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve validar input com campos faltando (Zod)', async () => {
-      // Arrange
+    it('should throw ZodError when input has missing fields', async () => {
       const incompleteParams = {
         firstName: 'João'
-        // lastName, email e password faltando
       }
 
-      // Act & Assert
-      await expect(
-        createUserUseCase.execute(incompleteParams)
-      ).rejects.toThrow() // ZodError
+      await expect(createUserUseCase.execute(incompleteParams)).rejects.toThrow(
+        ZodError
+      )
 
       expect(mockUserRepository.findByEmail).not.toHaveBeenCalled()
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve lançar UserDeletedError com email em maiúsculo (Zod lowercases) quando email está deletado', async () => {
-      // Arrange
+    it('should throw UserDeletedError with uppercase email (Zod lowercases) when email is deleted', async () => {
       const paramsWithUpperCaseEmail = {
         ...validUserParams,
         email: 'JOAO@EMAIL.COM'
@@ -147,12 +138,10 @@ describe('CreateUserUseCase', () => {
 
       mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
-      // Act & Assert
       await expect(
         createUserUseCase.execute(paramsWithUpperCaseEmail)
       ).rejects.toThrow(UserDeletedError)
 
-      // O schema do Zod faz .toLowerCase() .trim(), então findByEmail recebe lowercase
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         'joao@email.com',
         true
@@ -160,14 +149,12 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    test('deve propagar erro se o repositório falhar', async () => {
-      // Arrange
+    it('should propagate error if repository fails', async () => {
       const dbError = new Error('Database connection failed')
       mockUserRepository.findByEmail.mockResolvedValue(null)
       passwordHelper.hash.mockResolvedValue(hashedPassword)
       mockUserRepository.create.mockRejectedValue(dbError)
 
-      // Act & Assert
       await expect(createUserUseCase.execute(validUserParams)).rejects.toThrow(
         'Database connection failed'
       )
