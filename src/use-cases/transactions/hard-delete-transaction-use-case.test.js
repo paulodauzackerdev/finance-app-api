@@ -46,7 +46,8 @@ describe('HardDeleteTransactionUseCase', () => {
       const result = await hardDeleteTransactionUseCase.execute(transactionId)
 
       expect(mockTransactionRepository.findById).toHaveBeenCalledWith(
-        transactionId
+        transactionId,
+        true
       )
       expect(mockTransactionRepository.hardDelete).toHaveBeenCalledWith(
         transactionId
