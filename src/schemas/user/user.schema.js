@@ -25,7 +25,7 @@ export const userDatabaseSchema = z.object({
       'Name can only contain letters and spaces'
     ),
 
-  email: z.string().email('Invalid email format').toLowerCase().trim(),
+  email: z.string().email('Invalid email format').toLowerCase(),
 
   isActive: z.boolean().default(true)
 })
@@ -49,7 +49,6 @@ export const createUserInputSchema = z.object({
 
 export const updateUserInputSchema = createUserInputSchema
   .partial()
-
   .superRefine((data, ctx) => {
     if (Object.keys(data).length === 0) {
       ctx.addIssue({
@@ -59,8 +58,15 @@ export const updateUserInputSchema = createUserInputSchema
     }
   })
 
-export const userResponseSchema = userDatabaseSchema.omit({
-  passwordHash: true
+export const userResponseSchema = userDatabaseSchema.pick({
+  id: true,
+  firstName: true,
+  lastName: true,
+  email: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true
 })
 
 export const userIdSchema = z
