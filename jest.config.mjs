@@ -3,7 +3,13 @@ const config = {
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageProvider: 'v8',
-  collectCoverageFrom: ['src/**/*.js']
+  collectCoverageFrom: ['src/**/*.js'],
+  transform: {
+    '^.+\\.js$': 'babel-jest'
+  },
+  transformIgnorePatterns: [
+    'node_modules/(?!(.pnpm|@faker-js|zod)/)'
+  ]
 }
 
 export default config
