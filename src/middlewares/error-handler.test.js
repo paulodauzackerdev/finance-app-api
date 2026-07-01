@@ -11,6 +11,8 @@ import {
   TransactionUnauthorizedError
 } from '../errors/transaction.js'
 
+import { InvalidCredentialsError } from '../errors/credentials.js'
+
 describe('errorHandler', () => {
   let req
   let res
@@ -59,8 +61,7 @@ describe('errorHandler', () => {
 
   describe('401 - InvalidCredentialsError', () => {
     it('should return 401 with error message', () => {
-      const error = new Error('Invalid email or password')
-      error.name = 'InvalidCredentialsError'
+      const error = new InvalidCredentialsError()
 
       errorHandler(error, req, res, next)
 
@@ -68,9 +69,8 @@ describe('errorHandler', () => {
       expect(json).toHaveBeenCalledWith({ error: 'Invalid email or password' })
     })
 
-    it('should handle InvalidCredentialsError by name check', () => {
-      const error = new Error('Custom auth error')
-      error.name = 'InvalidCredentialsError'
+    it('should handle InvalidCredentialsError with custom message', () => {
+      const error = new InvalidCredentialsError('Custom auth error')
 
       errorHandler(error, req, res, next)
 
@@ -113,13 +113,13 @@ describe('errorHandler', () => {
     })
   })
 
-  describe('409 - UserDeletedError', () => {
-    it('should return 409 with error message', () => {
+  describe('403 - UserDeletedError', () => {
+    it('should return 403 with error message', () => {
       const error = new UserDeletedError()
 
       errorHandler(error, req, res, next)
 
-      expect(res.status).toHaveBeenCalledWith(409)
+      expect(res.status).toHaveBeenCalledWith(403)
       expect(json).toHaveBeenCalledWith({
         error: 'This account has been deactivated and can be restored'
       })

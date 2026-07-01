@@ -19,6 +19,8 @@ import {
   TransactionUnauthorizedError
 } from '../errors/transaction.js'
 
+import { InvalidCredentialsError } from '../errors/credentials.js'
+
 export const errorHandler = (error, req, res, _next) => {
   console.error(`[${new Date().toISOString()}] ${error.name}: ${error.message}`)
   console.error(`  Path: ${req.method} ${req.path}`)
@@ -32,23 +34,21 @@ export const errorHandler = (error, req, res, _next) => {
   }
 
   // 401
-  if (error.name === 'InvalidCredentialsError') {
+  if (error instanceof InvalidCredentialsError) {
     return res.status(401).json({ error: error.message })
   }
 
   // 403
   if (
     error instanceof ForbiddenUserDeletionError ||
-    error instanceof TransactionUnauthorizedError
+    error instanceof TransactionUnauthorizedError ||
+    error instanceof UserDeletedError
   ) {
     return forbidden(res, error.message)
   }
 
   // 409
-  if (
-    error instanceof UserAlreadyExistsError ||
-    error instanceof UserDeletedError
-  ) {
+  if (error instanceof UserAlreadyExistsError) {
     return conflict(res, error.message)
   }
 
