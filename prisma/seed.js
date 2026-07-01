@@ -7,8 +7,7 @@ const SEED_USER = {
   firstName: 'Admin',
   lastName: 'User',
   email: 'admin@localhost.com',
-  password: 'Admin@123',
-  isActive: true
+  password: 'Admin@123'
 }
 
 const SEED_TRANSACTIONS = [
