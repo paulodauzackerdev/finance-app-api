@@ -108,6 +108,7 @@ The OpenAPI 3.0 specification is located at [`src/docs/openapi.js`](src/docs/ope
 - Get all users
 - Get user by ID
 - Get user by email
+- Get deleted users
 - Update user
 - Soft delete user
 - Hard delete user (permanent)
@@ -120,6 +121,8 @@ The OpenAPI 3.0 specification is located at [`src/docs/openapi.js`](src/docs/ope
 
 - Create transaction
 - List transactions by user
+- Get all deleted transactions
+- Get deleted transactions by user
 - Update transaction
 - Soft delete transaction
 - Hard delete transaction (permanent)
@@ -319,6 +322,16 @@ GET /api/users/email/:email
 
 ---
 
+### Get deleted users
+
+```http
+GET /api/users/deleted
+```
+
+Returns all soft-deleted users (with `deletedAt` set).
+
+---
+
 ### Get user balance
 
 ```http
@@ -441,6 +454,30 @@ GET /api/transactions?userId=USER_UUID
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
 | `userId` | UUID | ✅ | Filter transactions by user |
+
+---
+
+### Get all deleted transactions
+
+```http
+GET /api/transactions/deleted
+```
+
+Returns all soft-deleted transactions across all users.
+
+---
+
+### Get deleted transactions by user
+
+```http
+GET /api/transactions/deleted/:userId
+```
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | UUID | User ID |
+
+Returns soft-deleted transactions for a specific user.
 
 ---
 
