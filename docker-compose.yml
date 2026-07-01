@@ -3,9 +3,9 @@ services:
   # PostgreSQL Database
   # ============================================
   db:
-    image: postgres:16-alpine
-    container_name: finance-postgres
-    restart: always
+    image: postgres:17-alpine
+    container_name: finance-db
+    restart: unless-stopped
 
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
@@ -13,7 +13,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
 
     ports:
-      - '5432:5432'
+      - '${POSTGRES_HOST_PORT:-5432}:5432'
 
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -25,83 +25,32 @@ services:
       retries: 5
 
   # ============================================
-  # Finance App API
+  # Finance App API - Desenvolvimento
   # ============================================
   api:
     build:
       context: .
       target: dev
-    container_name: finance-app
-    restart: always
+      args:
+        PORT: ${PORT}
+    container_name: finance-api
+    restart: unless-stopped
 
     depends_on:
       db:
         condition: service_healthy
 
-    environment:
-      # App
-      PORT: ${PORT}
-      NODE_ENV: ${NODE_ENV}
-
-      # Database
-      POSTGRES_HOST: db
-      POSTGRES_PORT: ${POSTGRES_PORT}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
-
-      # Opcional
-      ADMIN_USER_ID: ${ADMIN_USER_ID}
+    env_file:
+      - .env
 
     ports:
-      - '8000:8000'
+      - '${PORT}:${PORT}'
 
     volumes:
-      # Bind mount para hot-reload em desenvolvimento
       - .:/app
-      # Preserva node_modules do container (evita sobrescrever com o do host)
       - /app/node_modules
 
     command: npm run dev
 
-  # ============================================
-  # Produção (descomente para usar)
-  # ============================================
-  # api-prod:
-  #   build:
-  #     context: .
-  #     target: production
-  #   container_name: finance-app-prod
-  #   restart: always
-  #
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
-  #
-  #   environment:
-  #     PORT: ${PORT}
-  #     NODE_ENV: production
-  #     POSTGRES_HOST: db
-  #     POSTGRES_PORT: ${POSTGRES_PORT}
-  #     POSTGRES_USER: ${POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-  #     POSTGRES_DB: ${POSTGRES_DB}
-  #     DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
-  #     ADMIN_USER_ID: ${ADMIN_USER_ID}
-  #
-  #   ports:
-  #     - '8000:8000'
-
 volumes:
   pgdata:
-
-#   Para rodar em desenvolvimento
-
-#   docker compose up -d
-
-#   Para rodar em produção
-
-#   Edite o docker-compose.yml, remova o comentário do serviço api-prod e use:
-
-#   docker compose --profile prod up -d
