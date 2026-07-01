@@ -1,0 +1,24 @@
+services:
+  # ============================================
+  # Finance App API - Produção
+  # ============================================
+  api:
+    build:
+      context: .
+      target: production
+      args:
+        PORT: ${PORT}
+    container_name: finance-api-prod
+    restart: unless-stopped
+
+    depends_on:
+      db:
+        condition: service_healthy
+
+    env_file:
+      - .env
+
+    ports:
+      - '${PORT}:${PORT}'
+
+    command: node index.js
