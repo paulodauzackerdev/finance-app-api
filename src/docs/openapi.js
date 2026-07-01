@@ -427,7 +427,18 @@ export const openApiSpec = {
             description: 'Transação atualizada',
             content: {
               'application/json': {
-                schema: { $ref: '#/components/schemas/TransactionResponse' }
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: {
+                      type: 'string',
+                      example: 'Transaction updated successfully'
+                    },
+                    transaction: {
+                      $ref: '#/components/schemas/TransactionResponse'
+                    }
+                  }
+                }
               }
             }
           },
@@ -616,14 +627,34 @@ export const openApiSpec = {
           firstName: { type: 'string', minLength: 2, maxLength: 50 },
           lastName: { type: 'string', minLength: 2, maxLength: 50 },
           email: { type: 'string', format: 'email' },
-          password: { type: 'string', minLength: 8, maxLength: 32 }
+          password: {
+            type: 'string',
+            minLength: 8,
+            maxLength: 32,
+            description:
+              'Must contain at least 1 uppercase, 1 lowercase, 1 number, and 1 special character'
+          }
         }
       },
       BalanceResponse: {
         type: 'object',
         properties: {
-          balance: { type: 'number', example: 1500.5 },
-          currency: { type: 'string', example: 'BRL' }
+          userId: { type: 'string', format: 'uuid' },
+          userName: { type: 'string', example: 'Sarah Connor' },
+          userEmail: {
+            type: 'string',
+            format: 'email',
+            example: 'sarah@resistance.com'
+          },
+          balance: {
+            type: 'object',
+            properties: {
+              totalIncome: { type: 'number', example: 10000.0 },
+              totalExpense: { type: 'number', example: 3000.0 },
+              totalInvestment: { type: 'number', example: 2000.0 },
+              balance: { type: 'number', example: 5000.0 }
+            }
+          }
         }
       },
       TransactionResponse: {
