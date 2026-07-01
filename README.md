@@ -150,9 +150,10 @@ src/
 │   └── repositories/
 │
 ├── middlewares/
+│   ├── cors.js
 │   ├── error-handler.js
-│   ├── rate-limiter.js
-│   └── cors.js
+│   ├── helmet.js
+│   └── rate-limiter.js
 │
 ├── helpers/
 ├── errors/
@@ -203,6 +204,12 @@ POSTGRES_PASSWORD=finance_pass
 POSTGRES_DB=financeapp
 
 DATABASE_URL=postgresql://finance_user:finance_pass@localhost:5432/financeapp
+
+# Optional: Protects admin user from deletion
+# ADMIN_USER_ID=<uuid>
+
+# Optional: Rate limit max requests per minute (default: 100)
+# RATE_LIMIT_MAX=100
 ```
 
 ---
@@ -224,8 +231,7 @@ docker compose up -d
 ## Docker (production)
 
 ```bash
-# Edit docker-compose.yml, uncomment the api-prod service and run:
-docker compose --profile prod up -d
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ```
 
 ---
@@ -323,7 +329,21 @@ GET /api/users/:id/balance
 |-----------|------|-------------|
 | `id` | UUID | User ID |
 
-Returns `{ userId, userName, userEmail, balance }` with income, expense and investment totals.
+Response:
+
+```json
+{
+  "userId": "550e8400-e29b-41d4-a716-446655440000",
+  "userName": "Sarah Connor",
+  "userEmail": "sarah@resistance.com",
+  "balance": {
+    "totalIncome": 10000.0,
+    "totalExpense": 3000.0,
+    "totalInvestment": 2000.0,
+    "balance": 5000.0
+  }
+}
+```
 
 ---
 
@@ -354,6 +374,8 @@ DELETE /api/users/:id
 
 Marks the user as deleted (sets `deletedAt` timestamp). The user will no longer appear in listings.
 
+> **Note:** Users with ID matching `ADMIN_USER_ID` env var cannot be deleted (returns 403 Forbidden).
+
 ---
 
 ### Hard delete user (permanent)
@@ -363,6 +385,8 @@ DELETE /api/users/:id/hard
 ```
 
 Permanently removes the user from the database. Cannot be undone.
+
+> **Note:** Users with ID matching `ADMIN_USER_ID` env var cannot be hard-deleted (returns 403 Forbidden).
 
 ---
 
@@ -496,7 +520,7 @@ The API uses centralized error handling middleware with custom error classes:
 | `ForbiddenUserDeletionError` | 403 | Cannot delete admin user |
 | `TransactionUnauthorizedError` | 403 | Cannot access another user's transaction |
 | `UserAlreadyExistsError` | 409 | Email already in use |
-| `UserDeletedError` | 409 | Account is deactivated and can be restored |
+| `UserDeletedError` | 403 | Account is deactivated and can be restored |
 | `ZodError` | 400 | Validation failed
 
 ---
