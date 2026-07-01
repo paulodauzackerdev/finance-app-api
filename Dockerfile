@@ -1,7 +1,7 @@
 # ============================================
-# Stage 1: Dependencies
+# Stage 1: Base (sistema comum)
 # ============================================
-FROM node:22-slim AS deps
+FROM node:22-slim AS base
 
 RUN apt-get update && apt-get install -y \
   openssl \
@@ -9,54 +9,45 @@ RUN apt-get update && apt-get install -y \
   && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
+
+# ============================================
+# Stage 2: Dependencies
+# ============================================
+FROM base AS deps
 
 COPY package*.json ./
 COPY prisma ./prisma/
 
 RUN npm ci
 
-RUN npx prisma generate
-
 # ============================================
-# Stage 2: Development (hot-reload)
+# Stage 3: Development (hot-reload)
 # ============================================
-FROM node:22-slim AS dev
-
-RUN apt-get update && apt-get install -y \
-  openssl \
-  ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
+FROM base AS dev
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 
 COPY . .
 
-EXPOSE 8000
+ARG PORT=8000
+EXPOSE $PORT
 
 ENTRYPOINT ["sh", "docker-entrypoint.sh"]
 CMD ["npm", "run", "dev"]
 
 # ============================================
-# Stage 3: Production
+# Stage 4: Production
 # ============================================
-FROM node:22-slim AS production
-
-RUN apt-get update && apt-get install -y \
-  openssl \
-  ca-certificates \
-  && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
+FROM base AS production
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/prisma ./prisma
 
 COPY . .
 
-EXPOSE 8000
+ARG PORT=8000
+EXPOSE $PORT
 
 ENTRYPOINT ["sh", "docker-entrypoint.sh"]
 CMD ["node", "index.js"]
