@@ -9,8 +9,10 @@ export class HardDeleteTransactionUseCase {
   async execute(transactionId) {
     const validatedId = transactionIdSchema.parse(transactionId)
 
-    const existingTransaction =
-      await this.transactionRepository.findById(validatedId)
+    const existingTransaction = await this.transactionRepository.findById(
+      validatedId,
+      true
+    )
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
