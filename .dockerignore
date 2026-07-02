@@ -1,6 +1,96 @@
+# ============================================
+# Version control
+# ============================================
 .git
+.gitignore
+.gitattributes
+
+# ============================================
+# Dependencies
+# ============================================
 node_modules
-npm-debug.log
+
+# ============================================
+# Environment files (contain secrets)
+# ============================================
 .env
+.env.*
+!.env.example
+
+# ============================================
+# Build output
+# ============================================
 dist
 build
+
+# ============================================
+# Test coverage reports
+# ============================================
+coverage
+coverage.*
+
+# ============================================
+# Logs
+# ============================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ============================================
+# Documentation (not needed at runtime)
+# ============================================
+_guides
+README.md
+
+# ============================================
+# Config files (not needed at runtime)
+# ============================================
+eslint.config.js
+.prettierrc*
+.prettierignore
+commitlint.config.*
+.lintstagedrc*
+babel.config.*
+jest.config.*
+.editorconfig
+
+# ============================================
+# Git hooks
+# ============================================
+.husky
+
+# ============================================
+# Claude AI config (not needed in container)
+# ============================================
+.claude
+
+# ============================================
+# OS files
+# ============================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ============================================
+# IDE files
+# ============================================
+.vscode
+.idea
+*.sublime-*
+*.sublime-workspace
+
+# ============================================
+# Docker files (not needed inside image)
+# ============================================
+docker-compose.yml
+docker-compose.*.yml
+
+# ============================================
+# Lock files (only package-lock.json needed)
+# ============================================
+pnpm-lock.yaml
+yarn.lock
