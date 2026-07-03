@@ -1,5 +1,9 @@
 import { Router } from 'express'
 
+import { authMiddleware } from '../middlewares/auth.js'
+import { adminMiddleware } from '../middlewares/admin.js'
+import { createUserLimiter } from '../middlewares/rate-limiter.js'
+
 import { makeCreateUserController } from '../factories/users/make-create-user-controller.js'
 import { makeGetAllUsersController } from '../factories/users/make-get-all-users-controller.js'
 import { makeGetUserByIdController } from '../factories/users/make-get-user-by-id-controller.js'
@@ -24,19 +28,43 @@ const getDeletedUsersController = makeGetDeletedUsersController()
 const getUserBalanceController = makeGetUserBalanceController()
 const restoreUserController = makeRestoreUserController()
 
-usersRoutes.get('/', getAllUsersController.handle)
-usersRoutes.post('/', createUserController.handle)
+usersRoutes.post('/', createUserLimiter, createUserController.handle)
 
-usersRoutes.get('/email/:email', getUserByEmailController.handle)
+usersRoutes.get(
+  '/',
+  authMiddleware,
+  adminMiddleware,
+  getAllUsersController.handle
+)
+usersRoutes.get(
+  '/deleted',
+  authMiddleware,
+  adminMiddleware,
+  getDeletedUsersController.handle
+)
+usersRoutes.get(
+  '/email/:email',
+  authMiddleware,
+  adminMiddleware,
+  getUserByEmailController.handle
+)
+usersRoutes.get('/:id/balance', authMiddleware, getUserBalanceController.handle)
+usersRoutes.get('/:id', authMiddleware, getUserByIdController.handle)
 
-usersRoutes.get('/deleted', getDeletedUsersController.handle)
+usersRoutes.patch(
+  '/:id/restore',
+  authMiddleware,
+  adminMiddleware,
+  restoreUserController.handle
+)
+usersRoutes.patch('/:id', authMiddleware, updateUserController.handle)
 
-usersRoutes.get('/:id/balance', getUserBalanceController.handle)
-usersRoutes.delete('/:id/hard', hardDeleteUserController.handle)
-usersRoutes.patch('/:id/restore', restoreUserController.handle)
-
-usersRoutes.get('/:id', getUserByIdController.handle)
-usersRoutes.patch('/:id', updateUserController.handle)
-usersRoutes.delete('/:id', deleteUserController.handle)
+usersRoutes.delete(
+  '/:id/hard',
+  authMiddleware,
+  adminMiddleware,
+  hardDeleteUserController.handle
+)
+usersRoutes.delete('/:id', authMiddleware, deleteUserController.handle)
 
 export { usersRoutes }

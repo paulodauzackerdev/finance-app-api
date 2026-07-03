@@ -1,6 +1,14 @@
 /**
  * @jest-environment node
  */
+
+jest.mock('../middlewares/auth.js', () => ({
+  authMiddleware: jest.fn((req, res, next) => next())
+}))
+jest.mock('../middlewares/rate-limiter.js', () => ({
+  createUserLimiter: jest.fn((req, res, next) => next())
+}))
+
 jest.mock('../factories/users/make-create-user-controller.js', () => ({
   makeCreateUserController: jest.fn(() => ({ handle: jest.fn() }))
 }))
