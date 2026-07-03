@@ -571,7 +571,6 @@ export const openApiSpec = {
             format: 'email',
             example: 'sarah@resistance.com'
           },
-          isActive: { type: 'boolean', example: false },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
           deletedAt: {
