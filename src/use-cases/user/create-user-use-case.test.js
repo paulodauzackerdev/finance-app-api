@@ -27,7 +27,6 @@ describe('CreateUserUseCase', () => {
     firstName: 'João',
     lastName: 'Silva',
     email: 'joao@email.com',
-    isActive: true,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01')
   }

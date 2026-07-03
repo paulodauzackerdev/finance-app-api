@@ -32,7 +32,6 @@ describe('UserRepository', () => {
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        isActive: true,
         createdAt: new Date('2026-01-01'),
         updatedAt: new Date('2026-01-01'),
         deletedAt: null
@@ -51,7 +50,6 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
-          isActive: true,
           createdAt: true,
           updatedAt: true,
           deletedAt: true
@@ -80,7 +78,6 @@ describe('UserRepository', () => {
       firstName: 'John',
       lastName: 'Doe',
       email: 'john@example.com',
-      isActive: true,
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
       deletedAt: null
@@ -125,7 +122,6 @@ describe('UserRepository', () => {
       lastName: 'Doe',
       email: 'john@example.com',
       passwordHash: 'hashed_password',
-      isActive: true,
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01'),
       deletedAt: null
@@ -171,7 +167,7 @@ describe('UserRepository', () => {
         email: 'john@example.com',
         passwordHash: 'hashed_password'
       }
-      const createdUser = { ...userData, id: 'uuid-1', isActive: true }
+      const createdUser = { ...userData, id: 'uuid-1' }
 
       prisma.user.create.mockResolvedValue(createdUser)
 
@@ -184,7 +180,6 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
-          isActive: true,
           createdAt: true,
           updatedAt: true
         }
@@ -235,8 +230,7 @@ describe('UserRepository', () => {
         firstName: 'Jane',
         lastName: 'Smith',
         email: 'jane@example.com',
-        passwordHash: 'new_hash',
-        isActive: false
+        passwordHash: 'new_hash'
       }
 
       prisma.user.update.mockResolvedValue({ id: userId })
@@ -249,8 +243,7 @@ describe('UserRepository', () => {
           firstName: 'Jane',
           lastName: 'Smith',
           email: 'jane@example.com',
-          passwordHash: 'new_hash',
-          isActive: false
+          passwordHash: 'new_hash'
         },
         select: expect.any(Object)
       })
@@ -274,14 +267,13 @@ describe('UserRepository', () => {
   })
 
   describe('softDelete', () => {
-    it('should set deletedAt and isActive to false', async () => {
+    it('should set deletedAt', async () => {
       const userId = 'uuid-1'
       const deletedUser = {
         id: userId,
         firstName: 'John',
         lastName: 'Doe',
         email: 'john@example.com',
-        isActive: false,
         deletedAt: new Date('2026-06-01')
       }
 
@@ -292,15 +284,13 @@ describe('UserRepository', () => {
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: userId, deletedAt: null },
         data: {
-          deletedAt: expect.any(Date),
-          isActive: false
+          deletedAt: expect.any(Date)
         },
         select: {
           id: true,
           firstName: true,
           lastName: true,
           email: true,
-          isActive: true,
           deletedAt: true
         }
       })
@@ -330,8 +320,7 @@ describe('UserRepository', () => {
         id: userId,
         firstName: 'John',
         lastName: 'Doe',
-        email: 'john@example.com',
-        isActive: true
+        email: 'john@example.com'
       }
 
       prisma.user.update.mockResolvedValue(restoredUser)
@@ -341,15 +330,13 @@ describe('UserRepository', () => {
       expect(prisma.user.update).toHaveBeenCalledWith({
         where: { id: userId },
         data: {
-          deletedAt: null,
-          isActive: true
+          deletedAt: null
         },
         select: {
           id: true,
           firstName: true,
           lastName: true,
           email: true,
-          isActive: true,
           createdAt: true,
           updatedAt: true
         }
