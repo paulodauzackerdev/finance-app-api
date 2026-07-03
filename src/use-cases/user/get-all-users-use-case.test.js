@@ -84,7 +84,6 @@ describe('GetAllUsersUseCase', () => {
         email: 'john@email.com',
         passwordHash: 'hash123',
         createdAt: '2024-01-01T00:00:00Z',
-        isActive: true,
         role: 'admin'
       }
 
@@ -98,7 +97,6 @@ describe('GetAllUsersUseCase', () => {
         name: 'John',
         email: 'john@email.com',
         createdAt: '2024-01-01T00:00:00Z',
-        isActive: true,
         role: 'admin'
       })
       expect(result[0]).not.toHaveProperty('passwordHash')

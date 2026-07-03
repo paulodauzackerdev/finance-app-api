@@ -22,8 +22,7 @@ describe('UpdateUserUseCase', () => {
     id: faker.string.uuid(),
     firstName: 'João',
     lastName: 'Silva',
-    email: 'joao@email.com',
-    isActive: true
+    email: 'joao@email.com'
   }
 
   beforeEach(() => {
