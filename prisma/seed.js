@@ -7,7 +7,8 @@ const SEED_USER = {
   firstName: 'Admin',
   lastName: 'User',
   email: 'admin@localhost.com',
-  password: 'Admin@123'
+  password: 'Admin@123',
+  role: 'admin'
 }
 
 const SEED_TRANSACTIONS = [
@@ -96,7 +97,7 @@ async function seed() {
         lastName: SEED_USER.lastName,
         email: SEED_USER.email,
         passwordHash: hash,
-        isActive: SEED_USER.isActive
+        role: SEED_USER.role
       }
     })
 
