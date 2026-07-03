@@ -202,7 +202,6 @@ describe('userDatabaseSchema', () => {
     lastName: 'Doe',
     email: 'john@example.com',
     passwordHash: '$2b$12$hashvalue',
-    isActive: true,
     createdAt: new Date('2026-01-01'),
     updatedAt: new Date('2026-01-01'),
     deletedAt: null
@@ -212,17 +211,7 @@ describe('userDatabaseSchema', () => {
     const result = userDatabaseSchema.parse(validUser)
 
     expect(result.id).toBe(validUser.id)
-    expect(result.isActive).toBe(true)
     expect(result.deletedAt).toBeNull()
-  })
-
-  it('should default isActive to true when not provided', () => {
-    const { isActive: _isActive, ...withoutIsActive } = validUser
-
-    const result = userDatabaseSchema.parse(withoutIsActive)
-    void _isActive
-
-    expect(result.isActive).toBe(true)
   })
 
   it('should accept deletedAt as a Date', () => {

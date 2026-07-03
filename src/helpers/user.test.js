@@ -20,7 +20,6 @@ describe('removePasswordFromUser', () => {
       lastName: 'Connor',
       email: 'sarah@resistance.com',
       passwordHash: 'hashed_password_value',
-      isActive: true,
       createdAt: new Date('2026-01-01'),
       updatedAt: new Date('2026-01-01')
     }
@@ -32,7 +31,6 @@ describe('removePasswordFromUser', () => {
     expect(result.firstName).toBe(user.firstName)
     expect(result.lastName).toBe(user.lastName)
     expect(result.email).toBe(user.email)
-    expect(result.isActive).toBe(user.isActive)
     expect(result.createdAt).toBe(user.createdAt)
     expect(result.updatedAt).toBe(user.updatedAt)
   })

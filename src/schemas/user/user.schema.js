@@ -25,9 +25,7 @@ export const userDatabaseSchema = z.object({
       'Name can only contain letters and spaces'
     ),
 
-  email: z.string().email('Invalid email format').toLowerCase(),
-
-  isActive: z.boolean().default(true)
+  email: z.string().email('Invalid email format').toLowerCase()
 })
 
 export const createUserInputSchema = z.object({
@@ -63,7 +61,6 @@ export const userResponseSchema = userDatabaseSchema.pick({
   firstName: true,
   lastName: true,
   email: true,
-  isActive: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true
