@@ -11,7 +11,6 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -34,7 +33,6 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -53,7 +51,6 @@ export class UserRepository {
         lastName: true,
         email: true,
         passwordHash: true,
-        isActive: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -74,7 +71,6 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         createdAt: true,
         updatedAt: true
       }
@@ -98,10 +94,6 @@ export class UserRepository {
 
     if (updateParams.passwordHash !== undefined) {
       data.passwordHash = updateParams.passwordHash
-    }
-
-    if (updateParams.isActive !== undefined) {
-      data.isActive = updateParams.isActive
     }
 
     return prisma.user.update({
@@ -128,15 +120,13 @@ export class UserRepository {
         deletedAt: null
       },
       data: {
-        deletedAt: new Date(),
-        isActive: false
+        deletedAt: new Date()
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         deletedAt: true
       }
     })
@@ -156,15 +146,13 @@ export class UserRepository {
         id: userId
       },
       data: {
-        deletedAt: null,
-        isActive: true
+        deletedAt: null
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         email: true,
-        isActive: true,
         createdAt: true,
         updatedAt: true
       }
