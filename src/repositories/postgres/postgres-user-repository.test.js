@@ -50,6 +50,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           createdAt: true,
           updatedAt: true,
           deletedAt: true
@@ -180,6 +181,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           createdAt: true,
           updatedAt: true
         }
@@ -218,6 +220,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           createdAt: true,
           updatedAt: true
         }
@@ -291,6 +294,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           deletedAt: true
         }
       })
@@ -337,6 +341,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           createdAt: true,
           updatedAt: true
         }
@@ -368,6 +373,7 @@ describe('UserRepository', () => {
           firstName: true,
           lastName: true,
           email: true,
+          role: true,
           deletedAt: true
         },
         orderBy: { deletedAt: 'desc' }
