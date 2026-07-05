@@ -11,7 +11,8 @@ export default defineConfig([
       'build/**',
       'coverage/**',
       '*.log',
-      '.env*'
+      '.env*',
+      'src/docs/openapi.js'
     ]
   },
   {
