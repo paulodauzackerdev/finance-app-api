@@ -11,6 +11,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -33,6 +34,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -51,6 +53,7 @@ export class UserRepository {
         lastName: true,
         email: true,
         passwordHash: true,
+        role: true,
         createdAt: true,
         updatedAt: true,
         deletedAt: true
@@ -71,6 +74,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true
       }
@@ -107,6 +111,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true
       }
@@ -127,6 +132,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         deletedAt: true
       }
     })
@@ -153,6 +159,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         createdAt: true,
         updatedAt: true
       }
@@ -169,6 +176,7 @@ export class UserRepository {
         firstName: true,
         lastName: true,
         email: true,
+        role: true,
         deletedAt: true
       },
       orderBy: {
