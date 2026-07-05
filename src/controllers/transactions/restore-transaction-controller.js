@@ -9,8 +9,11 @@ export class RestoreTransactionController {
     try {
       const { id } = req.params
 
-      const restoredTransaction =
-        await this.restoreTransactionUseCase.execute(id)
+      const restoredTransaction = await this.restoreTransactionUseCase.execute(
+        id,
+        req.userId,
+        req.userRole
+      )
 
       return ok(res, {
         message: 'Transaction restored successfully',

@@ -6,10 +6,11 @@ import { TransactionNotFoundError } from '../../errors/transaction.js'
 describe('RestoreTransactionUseCase', () => {
   let restoreTransactionUseCase
   let mockTransactionRepository
+  const authenticatedUserId = faker.string.uuid()
 
   const mockDeletedTransaction = {
     id: faker.string.uuid(),
-    userId: faker.string.uuid(),
+    userId: authenticatedUserId,
     name: 'Salário',
     amount: 5000,
     type: 'income',
@@ -46,7 +47,11 @@ describe('RestoreTransactionUseCase', () => {
         mockRestoredTransaction
       )
 
-      const result = await restoreTransactionUseCase.execute(transactionId)
+      const result = await restoreTransactionUseCase.execute(
+        transactionId,
+        authenticatedUserId,
+        'admin'
+      )
 
       expect(mockTransactionRepository.findById).toHaveBeenCalledWith(
         transactionId,
@@ -65,7 +70,11 @@ describe('RestoreTransactionUseCase', () => {
       mockTransactionRepository.findById.mockResolvedValue(null)
 
       await expect(
-        restoreTransactionUseCase.execute(transactionId)
+        restoreTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(mockTransactionRepository.restore).not.toHaveBeenCalled()
@@ -73,7 +82,11 @@ describe('RestoreTransactionUseCase', () => {
 
     it('should throw ZodError for invalid UUID', async () => {
       await expect(
-        restoreTransactionUseCase.execute('invalid-uuid')
+        restoreTransactionUseCase.execute(
+          'invalid-uuid',
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
@@ -87,7 +100,11 @@ describe('RestoreTransactionUseCase', () => {
       mockTransactionRepository.findById.mockRejectedValue(dbError)
 
       await expect(
-        restoreTransactionUseCase.execute(transactionId)
+        restoreTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow('Database connection failed')
 
       expect(mockTransactionRepository.restore).not.toHaveBeenCalled()

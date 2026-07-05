@@ -6,10 +6,11 @@ import { TransactionNotFoundError } from '../../errors/transaction.js'
 describe('HardDeleteTransactionUseCase', () => {
   let hardDeleteTransactionUseCase
   let mockTransactionRepository
+  const authenticatedUserId = faker.string.uuid()
 
   const mockTransaction = {
     id: faker.string.uuid(),
-    userId: faker.string.uuid(),
+    userId: authenticatedUserId,
     name: 'Salário',
     amount: 5000,
     type: 'income',
@@ -43,7 +44,11 @@ describe('HardDeleteTransactionUseCase', () => {
         mockDeletedTransaction
       )
 
-      const result = await hardDeleteTransactionUseCase.execute(transactionId)
+      const result = await hardDeleteTransactionUseCase.execute(
+        transactionId,
+        authenticatedUserId,
+        'admin'
+      )
 
       expect(mockTransactionRepository.findById).toHaveBeenCalledWith(
         transactionId,
@@ -61,7 +66,11 @@ describe('HardDeleteTransactionUseCase', () => {
       mockTransactionRepository.findById.mockResolvedValue(null)
 
       await expect(
-        hardDeleteTransactionUseCase.execute(transactionId)
+        hardDeleteTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(mockTransactionRepository.hardDelete).not.toHaveBeenCalled()
@@ -69,7 +78,11 @@ describe('HardDeleteTransactionUseCase', () => {
 
     it('should throw ZodError for invalid UUID', async () => {
       await expect(
-        hardDeleteTransactionUseCase.execute('invalid-uuid')
+        hardDeleteTransactionUseCase.execute(
+          'invalid-uuid',
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
@@ -83,7 +96,11 @@ describe('HardDeleteTransactionUseCase', () => {
       mockTransactionRepository.findById.mockRejectedValue(dbError)
 
       await expect(
-        hardDeleteTransactionUseCase.execute(transactionId)
+        hardDeleteTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          'admin'
+        )
       ).rejects.toThrow('Database connection failed')
 
       expect(mockTransactionRepository.hardDelete).not.toHaveBeenCalled()

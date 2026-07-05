@@ -39,9 +39,7 @@ describe('GetTransactionsByUserIdController', () => {
     )
 
     const req = {
-      query: {
-        userId: 'dbcbb239-0825-47cf-847e-6d97615b054e'
-      }
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e'
     }
 
     const json = jest.fn()
@@ -59,7 +57,7 @@ describe('GetTransactionsByUserIdController', () => {
 
     // Assert
     expect(getTransactionsByUserIdUseCase.execute).toHaveBeenCalledWith(
-      'dbcbb239-0825-47cf-847e-6d97615b054e'
+      req.userId
     )
     expect(getTransactionsByUserIdUseCase.execute).toHaveBeenCalledTimes(1)
 
@@ -85,9 +83,7 @@ describe('GetTransactionsByUserIdController', () => {
     )
 
     const req = {
-      query: {
-        userId: 'dbcbb239-0825-47cf-847e-6d97615b054e'
-      }
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e'
     }
 
     const res = {
@@ -101,7 +97,7 @@ describe('GetTransactionsByUserIdController', () => {
 
     // Assert
     expect(getTransactionsByUserIdUseCase.execute).toHaveBeenCalledWith(
-      'dbcbb239-0825-47cf-847e-6d97615b054e'
+      req.userId
     )
     expect(getTransactionsByUserIdUseCase.execute).toHaveBeenCalledTimes(1)
 

@@ -10,7 +10,11 @@ export class HardDeleteTransactionController {
       const { id } = req.params
 
       const deletedTransaction =
-        await this.hardDeleteTransactionUseCase.execute(id)
+        await this.hardDeleteTransactionUseCase.execute(
+          id,
+          req.userId,
+          req.userRole
+        )
 
       return ok(res, {
         message: 'Transaction permanently deleted successfully',

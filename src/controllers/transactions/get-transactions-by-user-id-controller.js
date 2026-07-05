@@ -7,9 +7,9 @@ export class GetTransactionsByUserIdController {
 
   handle = async (req, res, next) => {
     try {
-      const { userId } = req.query
-      const transactions =
-        await this.getTransactionsByUserIdUseCase.execute(userId)
+      const transactions = await this.getTransactionsByUserIdUseCase.execute(
+        req.userId
+      )
 
       return ok(res, transactions)
     } catch (error) {

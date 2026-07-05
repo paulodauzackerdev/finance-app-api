@@ -30,6 +30,7 @@ describe('SoftDeleteTransactionController', () => {
     )
 
     const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
       params: {
         id: '35504dde-6b4e-4d0e-a84e-854800175083'
       }
@@ -50,7 +51,8 @@ describe('SoftDeleteTransactionController', () => {
 
     // Assert
     expect(softDeleteTransactionUseCase.execute).toHaveBeenCalledWith(
-      '35504dde-6b4e-4d0e-a84e-854800175083'
+      '35504dde-6b4e-4d0e-a84e-854800175083',
+      req.userId
     )
     expect(softDeleteTransactionUseCase.execute).toHaveBeenCalledTimes(1)
 
@@ -76,6 +78,7 @@ describe('SoftDeleteTransactionController', () => {
     )
 
     const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
       params: {
         id: '35504dde-6b4e-4d0e-a84e-854800175083'
       }
@@ -92,7 +95,8 @@ describe('SoftDeleteTransactionController', () => {
 
     // Assert
     expect(softDeleteTransactionUseCase.execute).toHaveBeenCalledWith(
-      '35504dde-6b4e-4d0e-a84e-854800175083'
+      '35504dde-6b4e-4d0e-a84e-854800175083',
+      req.userId
     )
     expect(softDeleteTransactionUseCase.execute).toHaveBeenCalledTimes(1)
 

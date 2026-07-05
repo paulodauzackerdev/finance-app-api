@@ -6,10 +6,11 @@ import { TransactionNotFoundError } from '../../errors/transaction.js'
 describe('SoftDeleteTransactionUseCase', () => {
   let softDeleteTransactionUseCase
   let mockTransactionRepository
+  const authenticatedUserId = faker.string.uuid()
 
   const mockTransaction = {
     id: faker.string.uuid(),
-    userId: faker.string.uuid(),
+    userId: authenticatedUserId,
     name: 'Salário',
     amount: 5000,
     type: 'income',
@@ -43,7 +44,10 @@ describe('SoftDeleteTransactionUseCase', () => {
         mockDeletedTransaction
       )
 
-      const result = await softDeleteTransactionUseCase.execute(transactionId)
+      const result = await softDeleteTransactionUseCase.execute(
+        transactionId,
+        authenticatedUserId
+      )
 
       expect(mockTransactionRepository.findById).toHaveBeenCalledWith(
         transactionId
@@ -60,7 +64,7 @@ describe('SoftDeleteTransactionUseCase', () => {
       mockTransactionRepository.findById.mockResolvedValue(null)
 
       await expect(
-        softDeleteTransactionUseCase.execute(transactionId)
+        softDeleteTransactionUseCase.execute(transactionId, authenticatedUserId)
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(mockTransactionRepository.softDelete).not.toHaveBeenCalled()
@@ -68,7 +72,10 @@ describe('SoftDeleteTransactionUseCase', () => {
 
     it('should throw ZodError for invalid UUID', async () => {
       await expect(
-        softDeleteTransactionUseCase.execute('invalid-uuid')
+        softDeleteTransactionUseCase.execute(
+          'invalid-uuid',
+          authenticatedUserId
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
@@ -82,7 +89,7 @@ describe('SoftDeleteTransactionUseCase', () => {
       mockTransactionRepository.findById.mockRejectedValue(dbError)
 
       await expect(
-        softDeleteTransactionUseCase.execute(transactionId)
+        softDeleteTransactionUseCase.execute(transactionId, authenticatedUserId)
       ).rejects.toThrow('Database connection failed')
 
       expect(mockTransactionRepository.softDelete).not.toHaveBeenCalled()

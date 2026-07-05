@@ -30,6 +30,8 @@ describe('HardDeleteTransactionController', () => {
     )
 
     const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
+      userRole: 'user',
       params: {
         id: '35504dde-6b4e-4d0e-a84e-854800175083'
       }
@@ -50,7 +52,9 @@ describe('HardDeleteTransactionController', () => {
 
     // Assert
     expect(hardDeleteTransactionUseCase.execute).toHaveBeenCalledWith(
-      req.params.id
+      req.params.id,
+      req.userId,
+      req.userRole
     )
     expect(hardDeleteTransactionUseCase.execute).toHaveBeenCalledTimes(1)
 
@@ -76,6 +80,8 @@ describe('HardDeleteTransactionController', () => {
     )
 
     const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
+      userRole: 'user',
       params: {
         id: '35504dde-6b4e-4d0e-a84e-854800175083'
       }
@@ -92,7 +98,9 @@ describe('HardDeleteTransactionController', () => {
 
     // Assert
     expect(hardDeleteTransactionUseCase.execute).toHaveBeenCalledWith(
-      '35504dde-6b4e-4d0e-a84e-854800175083'
+      '35504dde-6b4e-4d0e-a84e-854800175083',
+      req.userId,
+      req.userRole
     )
     expect(hardDeleteTransactionUseCase.execute).toHaveBeenCalledTimes(1)
 

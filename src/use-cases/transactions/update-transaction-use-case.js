@@ -3,7 +3,10 @@ import {
   transactionIdSchema
 } from '../../schemas/transaction/transaction.schema.js'
 
-import { TransactionNotFoundError } from '../../errors/transaction.js'
+import {
+  TransactionNotFoundError,
+  TransactionUnauthorizedError
+} from '../../errors/transaction.js'
 
 const SPECIAL_FIELDS = {
   amount: (value, existingTransaction) => {
@@ -27,7 +30,7 @@ export class UpdateTransactionUseCase {
     this.transactionRepository = transactionRepository
   }
 
-  async execute(transactionId, updateParams) {
+  async execute(transactionId, authenticatedUserId, updateParams) {
     const validatedId = transactionIdSchema.parse(transactionId)
     const validatedData = updateTransactionInputSchema.parse(updateParams)
 
@@ -36,6 +39,10 @@ export class UpdateTransactionUseCase {
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
+    }
+
+    if (existingTransaction.userId !== authenticatedUserId) {
+      throw new TransactionUnauthorizedError()
     }
 
     const updatesToApply = {}

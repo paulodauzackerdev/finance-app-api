@@ -1,12 +1,15 @@
 import { transactionIdSchema } from '../../schemas/transaction/transaction.schema.js'
-import { TransactionNotFoundError } from '../../errors/transaction.js'
+import {
+  TransactionNotFoundError,
+  TransactionUnauthorizedError
+} from '../../errors/transaction.js'
 
 export class RestoreTransactionUseCase {
   constructor(transactionRepository) {
     this.transactionRepository = transactionRepository
   }
 
-  async execute(transactionId) {
+  async execute(transactionId, authenticatedUserId, authenticatedUserRole) {
     const validatedId = transactionIdSchema.parse(transactionId)
 
     const existingTransaction = await this.transactionRepository.findById(
@@ -16,6 +19,13 @@ export class RestoreTransactionUseCase {
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
+    }
+
+    if (
+      existingTransaction.userId !== authenticatedUserId &&
+      authenticatedUserRole !== 'admin'
+    ) {
+      throw new TransactionUnauthorizedError()
     }
 
     const restoredTransaction =

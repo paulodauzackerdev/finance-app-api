@@ -28,8 +28,8 @@ describe('CreateTransactionController', () => {
     const controller = new CreateTransactionController(createTransactionUseCase)
 
     const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
       body: {
-        userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
         name: 'Cafeteria',
         amount: 12.5,
         description: 'Café da manhã',
@@ -52,7 +52,10 @@ describe('CreateTransactionController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(createTransactionUseCase.execute).toHaveBeenCalledWith(req.body)
+    expect(createTransactionUseCase.execute).toHaveBeenCalledWith({
+      ...req.body,
+      userId: req.userId
+    })
     expect(createTransactionUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(res.status).toHaveBeenCalledWith(201)
@@ -74,7 +77,10 @@ describe('CreateTransactionController', () => {
 
     const controller = new CreateTransactionController(createTransactionUseCase)
 
-    const req = { body: {} }
+    const req = {
+      userId: 'dbcbb239-0825-47cf-847e-6d97615b054e',
+      body: {}
+    }
     const res = { status: jest.fn() }
     const next = jest.fn()
 

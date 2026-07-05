@@ -10,7 +10,7 @@ export class SoftDeleteTransactionController {
       const { id } = req.params
 
       const deletedTransaction =
-        await this.softDeleteTransactionUseCase.execute(id)
+        await this.softDeleteTransactionUseCase.execute(id, req.userId)
 
       return ok(res, {
         message: 'Transaction deleted successfully',

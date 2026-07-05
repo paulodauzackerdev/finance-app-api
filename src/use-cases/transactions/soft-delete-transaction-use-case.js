@@ -1,12 +1,15 @@
 import { transactionIdSchema } from '../../schemas/transaction/transaction.schema.js'
-import { TransactionNotFoundError } from '../../errors/transaction.js'
+import {
+  TransactionNotFoundError,
+  TransactionUnauthorizedError
+} from '../../errors/transaction.js'
 
 export class SoftDeleteTransactionUseCase {
   constructor(transactionRepository) {
     this.transactionRepository = transactionRepository
   }
 
-  async execute(transactionId) {
+  async execute(transactionId, authenticatedUserId) {
     const validatedId = transactionIdSchema.parse(transactionId)
 
     const existingTransaction =
@@ -14,6 +17,10 @@ export class SoftDeleteTransactionUseCase {
 
     if (!existingTransaction) {
       throw new TransactionNotFoundError()
+    }
+
+    if (existingTransaction.userId !== authenticatedUserId) {
+      throw new TransactionUnauthorizedError()
     }
 
     const deletedTransaction =

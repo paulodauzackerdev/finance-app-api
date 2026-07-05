@@ -6,10 +6,11 @@ import { TransactionNotFoundError } from '../../errors/transaction.js'
 describe('UpdateTransactionUseCase', () => {
   let updateTransactionUseCase
   let mockTransactionRepository
+  const authenticatedUserId = faker.string.uuid()
 
   const mockExistingTransaction = {
     id: faker.string.uuid(),
-    userId: faker.string.uuid(),
+    userId: authenticatedUserId,
     name: 'Salário',
     amount: 5000,
     description: 'Salário mensal',
@@ -44,6 +45,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -64,7 +66,11 @@ describe('UpdateTransactionUseCase', () => {
       mockTransactionRepository.findById.mockResolvedValue(null)
 
       await expect(
-        updateTransactionUseCase.execute(transactionId, updateParams)
+        updateTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          updateParams
+        )
       ).rejects.toThrow(TransactionNotFoundError)
 
       expect(mockTransactionRepository.update).not.toHaveBeenCalled()
@@ -83,6 +89,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -104,6 +111,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -124,6 +132,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -147,6 +156,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -169,6 +179,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -190,6 +201,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -218,6 +230,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -248,6 +261,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -260,7 +274,11 @@ describe('UpdateTransactionUseCase', () => {
       const updateParams = { name: 'Teste' }
 
       await expect(
-        updateTransactionUseCase.execute(invalidId, updateParams)
+        updateTransactionUseCase.execute(
+          invalidId,
+          authenticatedUserId,
+          updateParams
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
@@ -272,7 +290,11 @@ describe('UpdateTransactionUseCase', () => {
       const updateParams = {}
 
       await expect(
-        updateTransactionUseCase.execute(transactionId, updateParams)
+        updateTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          updateParams
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockTransactionRepository.findById).not.toHaveBeenCalled()
@@ -297,6 +319,7 @@ describe('UpdateTransactionUseCase', () => {
 
       const result = await updateTransactionUseCase.execute(
         transactionId,
+        authenticatedUserId,
         updateParams
       )
 
@@ -318,7 +341,11 @@ describe('UpdateTransactionUseCase', () => {
       mockTransactionRepository.update.mockRejectedValue(dbError)
 
       await expect(
-        updateTransactionUseCase.execute(transactionId, updateParams)
+        updateTransactionUseCase.execute(
+          transactionId,
+          authenticatedUserId,
+          updateParams
+        )
       ).rejects.toThrow('Database connection failed')
     })
   })

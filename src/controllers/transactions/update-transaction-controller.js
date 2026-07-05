@@ -9,11 +9,10 @@ export class UpdateTransactionController {
     try {
       const { id } = req.params
 
-      const updateParams = req.body
-
       const updatedTransaction = await this.updateTransactionUseCase.execute(
         id,
-        updateParams
+        req.userId,
+        req.body
       )
 
       return ok(res, {
