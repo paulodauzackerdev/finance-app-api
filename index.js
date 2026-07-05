@@ -11,6 +11,8 @@ import { authRoutes } from './src/routes/auth-routes.js'
 import { usersRoutes } from './src/routes/users-routes.js'
 import { transactionsRoutes } from './src/routes/transactions-routes.js'
 
+import { prisma, startTokenCleanup } from './prisma/prisma.js'
+
 const app = express()
 
 app.use(helmet())
@@ -28,4 +30,20 @@ app.use(errorHandler)
 app.listen(process.env.PORT, () => {
   console.log(`Rodando com sucesso: http://localhost:${process.env.PORT}`)
   console.log(`Documentação: http://localhost:${process.env.PORT}/docs`)
+})
+
+// Cleanup periódico de refresh tokens expirados
+startTokenCleanup()
+
+// Graceful shutdown — fecha conexões do Prisma ao encerrar
+process.on('SIGTERM', async () => {
+  console.log('[Server] Recebido SIGTERM, encerrando...')
+  await prisma.$disconnect()
+  process.exit(0)
+})
+
+process.on('SIGINT', async () => {
+  console.log('[Server] Recebido SIGINT, encerrando...')
+  await prisma.$disconnect()
+  process.exit(0)
 })

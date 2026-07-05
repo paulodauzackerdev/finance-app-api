@@ -16,7 +16,7 @@ This project was created to study and apply backend engineering concepts such as
 
 ---
 
-# Technologies
+## Technologies
 
 - Node.js
 - Express.js
@@ -30,14 +30,15 @@ This project was created to study and apply backend engineering concepts such as
 - Helmet (security headers)
 - CORS
 - express-rate-limit
+- jsonwebtoken (JWT)
 
 ---
 
-# Architectural Concepts
+## Architectural Concepts
 
 This project applies several software engineering concepts:
 
-## Clean Architecture
+### Clean Architecture
 
 The application is separated into layers:
 
@@ -55,9 +56,9 @@ Each layer has a single responsibility.
 
 ---
 
-## SOLID Principles
+### SOLID Principles
 
-### Single Responsibility Principle (SRP)
+#### Single Responsibility Principle (SRP)
 
 Each class has only one responsibility.
 
@@ -77,7 +78,7 @@ Repositories are injected through factories.
 
 ---
 
-## Dependency Injection (DI)
+### Dependency Injection (DI)
 
 Repositories are injected into use cases, allowing easy replacement between:
 
@@ -88,7 +89,7 @@ Repositories are injected into use cases, allowing easy replacement between:
 
 ---
 
-# Interactive Documentation
+## Interactive Documentation
 
 The API provides an interactive documentation page powered by **Scalar** (a modern alternative to Swagger UI):
 
@@ -100,47 +101,55 @@ The OpenAPI 3.0 specification is located at [`src/docs/openapi.js`](src/docs/ope
 
 ---
 
-# Features
+## Features
 
-## Users
+### Authentication (JWT + Refresh Token)
+
+- Login with email/password → access token (JWT, 15min) + refresh token (7 days)
+- Refresh token rotation — each refresh invalidates the previous token
+- Replay attack protection — reused revoked tokens invalidate all user sessions
+- Logout — revokes the refresh token
+- Rate limiting on login (5 attempts/15min), refresh (10/15min), and signup (3/IP/hour)
+
+### Users
 
 - Create user
-- Get all users
-- Get user by ID
-- Get user by email
-- Get deleted users
-- Update user
-- Soft delete user
-- Hard delete user (permanent)
-- Restore user
+- Get all users (admin only)
+- Get user by ID (own data or admin)
+- Get user by email (admin only)
+- Get deleted users (admin only)
+- Update user (own data)
+- Soft delete user (own data)
+- Hard delete user — permanent (admin only)
+- Restore user (admin only)
 - Get user balance
 
----
+### Transactions
 
-## Transactions
-
-- Create transaction
-- List transactions by user
-- Get all deleted transactions
-- Get deleted transactions by user
-- Update transaction
-- Soft delete transaction
-- Hard delete transaction (permanent)
-- Restore transaction
-- User ownership validation
+- Create transaction (userId from JWT token)
+- List transactions by authenticated user
+- Get all deleted transactions (admin only)
+- Get deleted transactions by user (admin only)
+- Update transaction (ownership verified)
+- Soft delete transaction (ownership verified)
+- Hard delete transaction — permanent (ownership + admin bypass)
+- Restore transaction (ownership + admin bypass)
+- User ownership validation in use-cases
 - Financial amount validation
 
 ---
 
-# Project Structure
+## Project Structure
 
 ```txt
 src/
 ├── controllers/
+│   ├── auth/
 │   ├── users/
 │   └── transactions/
 │
 ├── use-cases/
+│   ├── auth/
 │   ├── users/
 │   └── transactions/
 │
@@ -148,11 +157,14 @@ src/
 │   └── postgres/
 │
 ├── factories/
+│   ├── auth/
 │   ├── users/
 │   ├── transactions/
 │   └── repositories/
 │
 ├── middlewares/
+│   ├── auth.js              ← JWT authentication
+│   ├── admin.js             ← RBAC (role check)
 │   ├── cors.js
 │   ├── error-handler.js
 │   ├── helmet.js
@@ -161,6 +173,7 @@ src/
 ├── helpers/
 ├── errors/
 ├── schemas/
+│   ├── auth/
 │   ├── user/
 │   └── transaction/
 │
@@ -170,9 +183,9 @@ src/
 
 ---
 
-# Installation
+## Installation
 
-## Clone repository
+### Clone repository
 
 ```bash
 git clone https://github.com/paulodauzackerdev/finance-app-api.git
@@ -180,7 +193,7 @@ git clone https://github.com/paulodauzackerdev/finance-app-api.git
 
 ---
 
-## Install dependencies
+### Install dependencies
 
 ```bash
 npm install
@@ -188,7 +201,7 @@ npm install
 
 ---
 
-# Environment Variables
+## Environment Variables
 
 Copy `.env.example` to `.env` and adjust the values:
 
@@ -208,6 +221,11 @@ POSTGRES_DB=financeapp
 
 DATABASE_URL=postgresql://finance_user:finance_pass@localhost:5432/financeapp
 
+# JWT
+JWT_SECRET=<your-secret-min-32-chars>
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_EXPIRES_IN_MS=604800000
+
 # Optional: Protects admin user from deletion
 # ADMIN_USER_ID=<uuid>
 
@@ -217,21 +235,21 @@ DATABASE_URL=postgresql://finance_user:finance_pass@localhost:5432/financeapp
 
 ---
 
-# Running the project
+## Running the project
 
-## Development mode
+### Development mode
 
 ```bash
 npm run start:dev
 ```
 
-## Docker (development)
+### Docker (development)
 
 ```bash
 docker compose up -d
 ```
 
-## Docker (production)
+### Docker (production)
 
 ```bash
 docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -239,15 +257,15 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 ---
 
-# Database
+## Database
 
-## Migrations
+### Migrations
 
 ```bash
 npm run prisma:migrate
 ```
 
-## Seed
+### Seed
 
 ```bash
 npm run seed
@@ -263,11 +281,98 @@ npm run seed:undo
 
 ---
 
-# API Endpoints
+## API Endpoints
 
-## Users
+### Authentication
 
-### Create user
+#### Login
+
+```http
+POST /api/auth/login
+```
+
+Body:
+
+```json
+{
+  "email": "admin@localhost.com",
+  "password": "Admin@123"
+}
+```
+
+Response (200):
+
+```json
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+  "refreshToken": "a1b2c3d4e5f6...",
+  "user": {
+    "id": "uuid",
+    "firstName": "Admin",
+    "lastName": "User",
+    "email": "admin@localhost.com",
+    "role": "admin"
+  }
+}
+```
+
+Rate limit: **5 attempts per 15 minutes** per IP.
+
+#### Refresh Token
+
+```http
+POST /api/auth/refresh
+```
+
+Body:
+
+```json
+{
+  "refreshToken": "a1b2c3d4e5f6..."
+}
+```
+
+Response (200):
+
+```json
+{
+  "accessToken": "eyJ...novo",
+  "refreshToken": "novo-refresh-token..."
+}
+```
+
+> The previous refresh token is revoked (rotation). If a revoked token is reused, **all tokens for that user are invalidated** (replay attack protection).
+
+Rate limit: **10 attempts per 15 minutes** per IP.
+
+#### Logout
+
+```http
+POST /api/auth/logout
+Authorization: Bearer <accessToken>
+```
+
+Body:
+
+```json
+{
+  "refreshToken": "a1b2c3d4e5f6..."
+}
+```
+
+Response (200):
+
+```json
+{
+  "message": "Logged out successfully"
+}
+```
+
+---
+
+### Users
+
+#### Create user
 
 ```http
 POST /api/users
@@ -286,35 +391,44 @@ Body:
 
 Password requirements: minimum 8 characters, at least 1 uppercase, 1 lowercase, 1 number, and 1 special character.
 
+Rate limit: **3 accounts per IP per hour**.
+
 ---
 
-### Get all users
+#### Get all users
 
 ```http
 GET /api/users
+Authorization: Bearer <accessToken>
 ```
 
-Returns all active (non-deleted) users.
+Requires `admin` role. Returns all active (non-deleted) users.
 
 ---
 
-### Get user by ID
+#### Get user by ID
 
 ```http
 GET /api/users/:id
+Authorization: Bearer <accessToken>
 ```
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `id` | UUID | User ID |
 
+Users can only access their own data. Admin can access any user.
+
 ---
 
-### Get user by email
+#### Get user by email
 
 ```http
 GET /api/users/email/:email
+Authorization: Bearer <accessToken>
 ```
+
+Requires `admin` role.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -322,20 +436,22 @@ GET /api/users/email/:email
 
 ---
 
-### Get deleted users
+#### Get deleted users
 
 ```http
 GET /api/users/deleted
+Authorization: Bearer <accessToken>
 ```
 
-Returns all soft-deleted users (with `deletedAt` set).
+Requires `admin` role. Returns all soft-deleted users (with `deletedAt` set).
 
 ---
 
-### Get user balance
+#### Get user balance
 
 ```http
 GET /api/users/:id/balance
+Authorization: Bearer <accessToken>
 ```
 
 | Parameter | Type | Description |
@@ -360,10 +476,11 @@ Response:
 
 ---
 
-### Update user
+#### Update user
 
 ```http
 PATCH /api/users/:id
+Authorization: Bearer <accessToken>
 ```
 
 Body (at least one field required):
@@ -377,12 +494,15 @@ Body (at least one field required):
 }
 ```
 
+Users can only update their own data.
+
 ---
 
-### Soft delete user
+#### Soft delete user
 
 ```http
 DELETE /api/users/:id
+Authorization: Bearer <accessToken>
 ```
 
 Marks the user as deleted (sets `deletedAt` timestamp). The user will no longer appear in listings.
@@ -391,41 +511,43 @@ Marks the user as deleted (sets `deletedAt` timestamp). The user will no longer 
 
 ---
 
-### Hard delete user (permanent)
+#### Hard delete user (permanent)
 
 ```http
 DELETE /api/users/:id/hard
+Authorization: Bearer <accessToken>
 ```
 
-Permanently removes the user from the database. Cannot be undone.
+Requires `admin` role. Permanently removes the user from the database. Cannot be undone.
 
 > **Note:** Users with ID matching `ADMIN_USER_ID` env var cannot be hard-deleted (returns 403 Forbidden).
 
 ---
 
-### Restore user
+#### Restore user
 
 ```http
 PATCH /api/users/:id/restore
+Authorization: Bearer <accessToken>
 ```
 
-Restores a soft-deleted user (clears `deletedAt` and reactivates).
+Requires `admin` role. Restores a soft-deleted user (clears `deletedAt` and reactivates).
 
 ---
 
-## Transactions
+### Transactions
 
-### Create transaction
+#### Create transaction
 
 ```http
 POST /api/transactions
+Authorization: Bearer <accessToken>
 ```
 
 Body:
 
 ```json
 {
-  "userId": "550e8400-e29b-41d4-a716-446655440000",
   "name": "Salary",
   "amount": 3500.5,
   "description": "Monthly salary",
@@ -436,42 +558,48 @@ Body:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| `userId` | UUID | ✅ | User who owns the transaction |
 | `name` | string | ✅ | Max 100 characters |
 | `amount` | number | ✅ | Positive, max 2 decimal places |
 | `description` | string | ❌ | Max 500 characters |
 | `type` | enum | ✅ | `income`, `expense`, or `investment` |
 | `transactionDate` | ISO datetime | ❌ | Defaults to current date |
 
+> **Note:** `userId` is automatically extracted from the JWT token. Any `userId` sent in the body is ignored.
+
 ---
 
-### List transactions by user
+#### List transactions
 
 ```http
-GET /api/transactions?userId=USER_UUID
+GET /api/transactions
+Authorization: Bearer <accessToken>
 ```
 
-| Query | Type | Required | Description |
-|-------|------|----------|-------------|
-| `userId` | UUID | ✅ | Filter transactions by user |
+Returns all transactions belonging to the authenticated user.
+
+> **Note:** Uses `userId` from the JWT token. The `userId` query parameter is ignored.
 
 ---
 
-### Get all deleted transactions
+#### Get all deleted transactions
 
 ```http
 GET /api/transactions/deleted
+Authorization: Bearer <accessToken>
 ```
 
-Returns all soft-deleted transactions across all users.
+Requires `admin` role. Returns all soft-deleted transactions across all users.
 
 ---
 
-### Get deleted transactions by user
+#### Get deleted transactions by user
 
 ```http
 GET /api/transactions/deleted/:userId
+Authorization: Bearer <accessToken>
 ```
+
+Requires `admin` role.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -481,10 +609,11 @@ Returns soft-deleted transactions for a specific user.
 
 ---
 
-### Update transaction
+#### Update transaction
 
 ```http
 PATCH /api/transactions/:id
+Authorization: Bearer <accessToken>
 ```
 
 Body (at least one field required):
@@ -497,72 +626,139 @@ Body (at least one field required):
 }
 ```
 
+Ownership is verified: users can only update their own transactions.
+
 ---
 
-### Soft delete transaction
+#### Soft delete transaction
 
 ```http
 DELETE /api/transactions/:id
+Authorization: Bearer <accessToken>
 ```
 
-Marks the transaction as deleted (sets `deletedAt`).
+Marks the transaction as deleted (sets `deletedAt`). Ownership is verified.
 
 ---
 
-### Hard delete transaction (permanent)
+#### Hard delete transaction (permanent)
 
 ```http
 DELETE /api/transactions/:id/hard
+Authorization: Bearer <accessToken>
 ```
 
-Permanently removes the transaction from the database.
+Requires `admin` role. Permanently removes the transaction from the database.
 
 ---
 
-### Restore transaction
+#### Restore transaction
 
 ```http
 PATCH /api/transactions/:id/restore
+Authorization: Bearer <accessToken>
 ```
 
-Restores a soft-deleted transaction (clears `deletedAt`).
+Requires `admin` role. Restores a soft-deleted transaction (clears `deletedAt`).
 
 ---
 
-# Security
+### Access Level Summary
 
-## Helmet
+```
+# Public (no token)
+POST   /api/auth/login                  → loginLimiter (5/15min)
+POST   /api/auth/refresh                → refreshLimiter (10/15min)
+POST   /api/users                       → createUserLimiter (3/IP/hora)
+GET    /docs
+
+# Authenticated (any role)
+POST   /api/auth/logout
+GET    /api/users/:id
+GET    /api/users/:id/balance
+PATCH  /api/users/:id
+DELETE /api/users/:id
+POST   /api/transactions
+GET    /api/transactions
+PATCH  /api/transactions/:id
+DELETE /api/transactions/:id
+
+# Admin only
+GET    /api/users
+GET    /api/users/deleted
+GET    /api/users/email/:email
+DELETE /api/users/:id/hard
+PATCH  /api/users/:id/restore
+GET    /api/transactions/deleted
+GET    /api/transactions/deleted/:userId
+DELETE /api/transactions/:id/hard
+PATCH  /api/transactions/:id/restore
+```
+
+---
+
+## Security
+
+### Helmet
 
 Adds HTTP security headers (`X-Content-Type-Options`, `X-Frame-Options`, `Content-Security-Policy`, etc.) to protect against common web vulnerabilities.
 
-## CORS
+### CORS
 
 Configured to allow requests only from allowed origins (default: `http://localhost:5173`).
 
-## Rate Limiting
+### Rate Limiting
 
-Global rate limit: 100 requests per minute per IP (configurable via `RATE_LIMIT_MAX` env var).
+| Limiter | Window | Max Requests | Applied To |
+|---------|:------:|:------------:|------------|
+| Global | 1 min | 100 | All routes |
+| Login | 15 min | 5 | `POST /api/auth/login` |
+| Refresh | 15 min | 10 | `POST /api/auth/refresh` |
+| Create user | 1 hour | 3 | `POST /api/users` |
+
+### JWT Authentication
+
+- **Access Token**: JWT with 15min expiration, contains `userId` and `role`
+- **Refresh Token**: Random 80-char string, stored as SHA-256 hash in PostgreSQL, 7-day expiration
+- **Rotation**: Each refresh invalidates the previous token
+- **Replay Protection**: Reusing a revoked token invalidates all user tokens
+
+### RBAC (Role-Based Access Control)
+
+| Role | What they can do |
+|------|------------------|
+| `user` | CRUD own data and transactions |
+| `admin` | Everything `user` can + list all users, hard delete, restore |
+
+### Ownership
+
+Ownership is enforced at the **use-case** level:
+- Transaction routes verify `userId` matches the JWT token
+- Admin can bypass ownership checks via `userRole === 'admin'`
 
 ---
 
-# Error Handling
+## Error Handling
 
 The API uses centralized error handling middleware with custom error classes:
 
 | Error | HTTP Status | Description |
 |-------|:-----------:|-------------|
+| `ZodError` | 400 | Validation failed |
+| `InvalidCredentialsError` | 401 | Invalid email or password |
+| `InvalidRefreshTokenError` | 401 | Invalid or expired refresh token |
+| `ForbiddenUserDeletionError` | 403 | Cannot delete admin user |
+| `ForbiddenUserAccessError` | 403 | Cannot access another user's data |
+| `TransactionUnauthorizedError` | 403 | Cannot access another user's transaction |
+| `UserDeletedError` | 403 | Account is deactivated and can be restored |
 | `UserNotFoundError` | 404 | User not found |
 | `TransactionNotFoundError` | 404 | Transaction not found |
-| `InvalidCredentialsError` | 401 | Invalid email or password |
-| `ForbiddenUserDeletionError` | 403 | Cannot delete admin user |
-| `TransactionUnauthorizedError` | 403 | Cannot access another user's transaction |
 | `UserAlreadyExistsError` | 409 | Email already in use |
-| `UserDeletedError` | 403 | Account is deactivated and can be restored |
-| `ZodError` | 400 | Validation failed
+| Rate limit | 429 | Too many requests |
 
 ---
 
-# Financial Amount Validation
+## Financial Amount Validation
 
 Transactions support:
 
@@ -580,10 +776,8 @@ Examples:
 
 ---
 
-# Future Improvements
+## Future Improvements
 
-- JWT Authentication
-- Refresh token support
 - Pagination & Filters
 - Dashboard endpoints
 - CI/CD pipeline (GitHub Actions)
@@ -592,7 +786,7 @@ Examples:
 
 ---
 
-# Author
+## Author
 
 Paulo Dauzacker
 
@@ -601,6 +795,6 @@ https://github.com/paulodauzackerdev
 
 ---
 
-# License
+## License
 
 This project is licensed under the MIT License.

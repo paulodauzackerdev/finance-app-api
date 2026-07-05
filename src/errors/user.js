@@ -27,3 +27,10 @@ export class ForbiddenUserDeletionError extends Error {
     this.name = 'ForbiddenUserDeletionError'
   }
 }
+
+export class ForbiddenUserAccessError extends Error {
+  constructor(message = 'You can only access your own data') {
+    super(message)
+    this.name = 'ForbiddenUserAccessError'
+  }
+}

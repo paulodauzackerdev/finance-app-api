@@ -11,7 +11,8 @@ import {
   UserNotFoundError,
   UserAlreadyExistsError,
   ForbiddenUserDeletionError,
-  UserDeletedError
+  UserDeletedError,
+  ForbiddenUserAccessError
 } from '../errors/user.js'
 
 import {
@@ -52,6 +53,7 @@ export const errorHandler = (error, req, res, _next) => {
   // 403 - Autorização
   if (
     error instanceof ForbiddenUserDeletionError ||
+    error instanceof ForbiddenUserAccessError ||
     error instanceof TransactionUnauthorizedError ||
     error instanceof UserDeletedError
   ) {

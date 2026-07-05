@@ -15,9 +15,12 @@ export class LogoutUseCase {
 
     if (storedToken && !storedToken.revokedAt) {
       await this.refreshTokenRepository.revoke(storedToken.id)
+
+      console.info(
+        `[Auth] Refresh token revogado: userId=${storedToken.userId}`
+      )
     }
 
-    console.info(`[Auth] Refresh token revogado: userId=${storedToken.userId}`)
     return { message: 'Logged out successfully' }
   }
 }

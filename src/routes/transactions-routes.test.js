@@ -1,6 +1,11 @@
 /**
  * @jest-environment node
  */
+
+jest.mock('../middlewares/auth.js', () => ({
+  authMiddleware: jest.fn((req, res, next) => next())
+}))
+
 jest.mock(
   '../factories/transactions/make-create-transaction-controller.js',
   () => ({

@@ -1,5 +1,8 @@
 import { Router } from 'express'
 
+import { authMiddleware } from '../middlewares/auth.js'
+import { adminMiddleware } from '../middlewares/admin.js'
+
 import { makeCreateTransactionController } from '../factories/transactions/make-create-transaction-controller.js'
 import { makeGetTransactionsByUserIdController } from '../factories/transactions/make-get-transactions-by-user-id-controller.js'
 import { makeUpdateTransactionController } from '../factories/transactions/make-update-transaction-controller.js'
@@ -22,21 +25,52 @@ const getDeletedTransactionsController = makeGetDeletedTransactionsController()
 const getDeletedTransactionsByUserIdController =
   makeGetDeletedTransactionsByUserIdController()
 
-transactionsRoutes.post('/', createTransactionController.handle)
-
-transactionsRoutes.get('/', getTransactionsByUserIdController.handle)
-
-transactionsRoutes.get('/deleted', getDeletedTransactionsController.handle)
-
+// ═══════════ READ ═══════════
+transactionsRoutes.get(
+  '/deleted',
+  authMiddleware,
+  adminMiddleware,
+  getDeletedTransactionsController.handle
+)
 transactionsRoutes.get(
   '/deleted/:userId',
+  authMiddleware,
+  adminMiddleware,
   getDeletedTransactionsByUserIdController.handle
 )
+transactionsRoutes.get(
+  '/',
+  authMiddleware,
+  getTransactionsByUserIdController.handle
+)
 
-transactionsRoutes.patch('/:id', updateTransactionController.handle)
+// ═══════════ CREATE ═══════════
+transactionsRoutes.post('/', authMiddleware, createTransactionController.handle)
 
-transactionsRoutes.delete('/:id/hard', hardDeleteTransactionController.handle)
-transactionsRoutes.delete('/:id', softDeleteTransactionController.handle)
-transactionsRoutes.patch('/:id/restore', restoreTransactionController.handle)
+// ═══════════ UPDATE ═══════════
+transactionsRoutes.patch(
+  '/:id/restore',
+  authMiddleware,
+  adminMiddleware,
+  restoreTransactionController.handle
+)
+transactionsRoutes.patch(
+  '/:id',
+  authMiddleware,
+  updateTransactionController.handle
+)
+
+// ═══════════ DELETE ═══════════
+transactionsRoutes.delete(
+  '/:id/hard',
+  authMiddleware,
+  adminMiddleware,
+  hardDeleteTransactionController.handle
+)
+transactionsRoutes.delete(
+  '/:id',
+  authMiddleware,
+  softDeleteTransactionController.handle
+)
 
 export { transactionsRoutes }

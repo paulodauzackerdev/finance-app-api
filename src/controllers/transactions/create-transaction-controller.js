@@ -7,7 +7,10 @@ export class CreateTransactionController {
 
   handle = async (req, res, next) => {
     try {
-      const transaction = await this.createTransactionUseCase.execute(req.body)
+      const transaction = await this.createTransactionUseCase.execute({
+        ...req.body,
+        userId: req.userId
+      })
 
       return created(res, {
         message: 'Transaction created successfully',

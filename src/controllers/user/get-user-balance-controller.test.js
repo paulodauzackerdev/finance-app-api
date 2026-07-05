@@ -15,8 +15,10 @@ describe('GetUserBalanceController', () => {
     const controller = new GetUserBalanceController(getUserBalanceUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'user',
       params: {
-        id: '1'
+        id: '550e8400-e29b-41d4-a716-446655440000'
       }
     }
 
@@ -34,7 +36,11 @@ describe('GetUserBalanceController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(getUserBalanceUseCase.execute).toHaveBeenCalledWith('1')
+    expect(getUserBalanceUseCase.execute).toHaveBeenCalledWith(
+      '550e8400-e29b-41d4-a716-446655440000',
+      req.userId,
+      req.userRole
+    )
     expect(getUserBalanceUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(res.status).toHaveBeenCalledWith(200)
@@ -57,6 +63,8 @@ describe('GetUserBalanceController', () => {
     const controller = new GetUserBalanceController(getUserBalanceUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'user',
       params: {
         id: '999'
       }
@@ -72,7 +80,11 @@ describe('GetUserBalanceController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(getUserBalanceUseCase.execute).toHaveBeenCalledWith('999')
+    expect(getUserBalanceUseCase.execute).toHaveBeenCalledWith(
+      '999',
+      req.userId,
+      req.userRole
+    )
     expect(getUserBalanceUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(next).toHaveBeenCalledWith(error)

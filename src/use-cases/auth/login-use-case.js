@@ -21,10 +21,8 @@ export class LoginUseCase {
       throw new InvalidCredentialsError()
     }
 
-    if (!user.role) {
-      throw new InvalidCredentialsError()
-    }
-
+    // Password compare ANTES da verificação de role
+    // para evitar timing attack (mesmo tempo para usuários com/sem role)
     const isPasswordValid = await passwordHelper.compare(
       password,
       user.passwordHash
@@ -34,11 +32,19 @@ export class LoginUseCase {
       throw new InvalidCredentialsError()
     }
 
+    // Proteção extra contra dados inconsistentes no banco
+    // Mantida APÓS o password compare para evitar timing attack
+    if (!user.role) {
+      throw new InvalidCredentialsError()
+    }
+
+    // Gera access token (JWT)
     const accessToken = jwtHelper.signAccessToken({
       userId: user.id,
       role: user.role
     })
 
+    // Gera refresh token (random + hash no banco)
     const refreshToken = jwtHelper.generateRefreshToken()
     const tokenHash = jwtHelper.hashRefreshToken(refreshToken)
     const expiresAt = jwtHelper.getRefreshExpiresAt()

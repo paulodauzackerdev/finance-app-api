@@ -2,8 +2,8 @@ export const openApiSpec = {
   openapi: '3.0.3',
   info: {
     title: 'Finance App API',
-    version: '1.0.0',
-    description: 'API para gerenciamento de usuários e transações financeiras'
+    version: '1.0.2',
+    description: 'API para gerenciamento financeiro pessoal com autenticação JWT, refresh token e RBAC'
   },
   servers: [
     {
@@ -12,14 +12,103 @@ export const openApiSpec = {
     }
   ],
   tags: [
+    { name: 'Auth', description: 'Autenticação JWT' },
     { name: 'Users', description: 'Gerenciamento de usuários' },
     { name: 'Transactions', description: 'Gerenciamento de transações' }
   ],
   paths: {
+    '/api/auth/login': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Realizar login',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/LoginInput' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Login realizado com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/LoginResponse' }
+              }
+            }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          429: { $ref: '#/components/responses/TooManyRequests' }
+        }
+      }
+    },
+    '/api/auth/refresh': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Renovar access token',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RefreshTokenInput' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Tokens renovados com sucesso',
+            content: {
+              'application/json': {
+                schema: { $ref: '#/components/schemas/RefreshTokenResponse' }
+              }
+            }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          429: { $ref: '#/components/responses/TooManyRequests' }
+        }
+      }
+    },
+    '/api/auth/logout': {
+      post: {
+        tags: ['Auth'],
+        summary: 'Realizar logout',
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/RefreshTokenInput' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Logout realizado com sucesso',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: {
+                      type: 'string',
+                      example: 'Logged out successfully'
+                    }
+                  }
+                }
+              }
+            }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' }
+        }
+      }
+    },
+    '/api/users': {
     '/api/users': {
       get: {
         tags: ['Users'],
-        summary: 'Listar todos os usuários',
+        summary: 'Listar todos os usuários (admin only)',
+        security: [{ bearerAuth: [] }],
         responses: {
           200: {
             description: 'Lista de usuários',
@@ -31,7 +120,9 @@ export const openApiSpec = {
                 }
               }
             }
-          }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' }
         }
       },
       post: {
@@ -55,7 +146,8 @@ export const openApiSpec = {
             }
           },
           400: { $ref: '#/components/responses/ValidationError' },
-          409: { $ref: '#/components/responses/ConflictError' }
+          409: { $ref: '#/components/responses/ConflictError' },
+          429: { $ref: '#/components/responses/TooManyRequests' }
         }
       }
     },
@@ -63,6 +155,7 @@ export const openApiSpec = {
       get: {
         tags: ['Users'],
         summary: 'Listar usuários deletados (soft delete)',
+        security: [{ bearerAuth: [] }],
         responses: {
           200: {
             description: 'Lista de usuários deletados',
@@ -74,14 +167,17 @@ export const openApiSpec = {
                 }
               }
             }
-          }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' }
         }
       }
     },
     '/api/users/email/{email}': {
       get: {
         tags: ['Users'],
-        summary: 'Buscar usuário por email',
+        summary: 'Buscar usuário por email (admin only)',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'email',
@@ -99,6 +195,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -107,6 +205,7 @@ export const openApiSpec = {
       get: {
         tags: ['Users'],
         summary: 'Buscar usuário por ID',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -124,12 +223,15 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       },
       patch: {
         tags: ['Users'],
         summary: 'Atualizar usuário',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -156,6 +258,8 @@ export const openApiSpec = {
             }
           },
           400: { $ref: '#/components/responses/ValidationError' },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' },
           409: { $ref: '#/components/responses/ConflictError' }
         }
@@ -163,6 +267,7 @@ export const openApiSpec = {
       delete: {
         tags: ['Users'],
         summary: 'Soft delete de usuário',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -189,8 +294,9 @@ export const openApiSpec = {
               }
             }
           },
-          404: { $ref: '#/components/responses/NotFoundError' },
-          403: { $ref: '#/components/responses/ForbiddenError' }
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
+          404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
     },
@@ -198,6 +304,7 @@ export const openApiSpec = {
       delete: {
         tags: ['Users'],
         summary: 'Hard delete de usuário (remoção permanente)',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -224,8 +331,9 @@ export const openApiSpec = {
               }
             }
           },
-          404: { $ref: '#/components/responses/NotFoundError' },
-          403: { $ref: '#/components/responses/ForbiddenError' }
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
+          404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
     },
@@ -233,6 +341,7 @@ export const openApiSpec = {
       patch: {
         tags: ['Users'],
         summary: 'Restaurar usuário deletado',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -259,6 +368,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -267,6 +378,7 @@ export const openApiSpec = {
       get: {
         tags: ['Users'],
         summary: 'Obter saldo do usuário',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -284,6 +396,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -291,15 +405,8 @@ export const openApiSpec = {
     '/api/transactions': {
       get: {
         tags: ['Transactions'],
-        summary: 'Listar transações de um usuário',
-        parameters: [
-          {
-            name: 'userId',
-            in: 'query',
-            required: true,
-            schema: { type: 'string', format: 'uuid' }
-          }
-        ],
+        summary: 'Listar transações do usuário autenticado',
+        security: [{ bearerAuth: [] }],
         responses: {
           200: {
             description: 'Lista de transações',
@@ -312,12 +419,13 @@ export const openApiSpec = {
               }
             }
           },
-          404: { $ref: '#/components/responses/NotFoundError' }
+          401: { $ref: '#/components/responses/UnauthorizedError' }
         }
       },
       post: {
         tags: ['Transactions'],
         summary: 'Criar uma nova transação',
+        security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -347,14 +455,15 @@ export const openApiSpec = {
             }
           },
           400: { $ref: '#/components/responses/ValidationError' },
-          404: { $ref: '#/components/responses/NotFoundError' }
+          401: { $ref: '#/components/responses/UnauthorizedError' }
         }
       }
     },
     '/api/transactions/deleted': {
       get: {
         tags: ['Transactions'],
-        summary: 'Listar todas as transações deletadas',
+        summary: 'Listar todas as transações deletadas (admin only)',
+        security: [{ bearerAuth: [] }],
         responses: {
           200: {
             description: 'Lista de transações deletadas',
@@ -368,14 +477,17 @@ export const openApiSpec = {
                 }
               }
             }
-          }
+          },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' }
         }
       }
     },
     '/api/transactions/deleted/{userId}': {
       get: {
         tags: ['Transactions'],
-        summary: 'Listar transações deletadas de um usuário específico',
+        summary: 'Listar transações deletadas de um usuário específico (admin only)',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'userId',
@@ -398,6 +510,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -406,6 +520,7 @@ export const openApiSpec = {
       patch: {
         tags: ['Transactions'],
         summary: 'Atualizar transação',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -443,12 +558,15 @@ export const openApiSpec = {
             }
           },
           400: { $ref: '#/components/responses/ValidationError' },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       },
       delete: {
         tags: ['Transactions'],
         summary: 'Soft delete de transação',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -477,6 +595,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -485,6 +605,7 @@ export const openApiSpec = {
       delete: {
         tags: ['Transactions'],
         summary: 'Hard delete de transação (remoção permanente)',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -513,6 +634,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -521,6 +644,7 @@ export const openApiSpec = {
       patch: {
         tags: ['Transactions'],
         summary: 'Restaurar transação deletada',
+        security: [{ bearerAuth: [] }],
         parameters: [
           {
             name: 'id',
@@ -549,6 +673,8 @@ export const openApiSpec = {
               }
             }
           },
+          401: { $ref: '#/components/responses/UnauthorizedError' },
+          403: { $ref: '#/components/responses/ForbiddenError' },
           404: { $ref: '#/components/responses/NotFoundError' }
         }
       }
@@ -571,6 +697,11 @@ export const openApiSpec = {
             format: 'email',
             example: 'sarah@resistance.com'
           },
+          role: {
+            type: 'string',
+            enum: ['user', 'admin'],
+            example: 'user'
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
           deletedAt: {
@@ -588,6 +719,11 @@ export const openApiSpec = {
           firstName: { type: 'string' },
           lastName: { type: 'string' },
           email: { type: 'string', format: 'email' },
+          role: {
+            type: 'string',
+            enum: ['user', 'admin'],
+            example: 'user'
+          },
           deletedAt: { type: 'string', format: 'date-time' }
         }
       },
@@ -684,13 +820,8 @@ export const openApiSpec = {
       },
       CreateTransactionInput: {
         type: 'object',
-        required: ['userId', 'name', 'amount', 'type'],
+        required: ['name', 'amount', 'type'],
         properties: {
-          userId: {
-            type: 'string',
-            format: 'uuid',
-            example: '550e8400-e29b-41d4-a716-446655440000'
-          },
           name: {
             type: 'string',
             minLength: 1,
@@ -719,6 +850,65 @@ export const openApiSpec = {
           field: { type: 'string', example: 'email' },
           message: { type: 'string', example: 'Invalid email format' }
         }
+      },
+      LoginInput: {
+        type: 'object',
+        required: ['email', 'password'],
+        properties: {
+          email: {
+            type: 'string',
+            format: 'email',
+            example: 'admin@localhost.com'
+          },
+          password: {
+            type: 'string',
+            example: 'Admin@123'
+          }
+        }
+      },
+      LoginResponse: {
+        type: 'object',
+        properties: {
+          accessToken: {
+            type: 'string',
+            example: 'eyJhbGciOiJIUzI1NiIs...'
+          },
+          refreshToken: {
+            type: 'string',
+            example: 'a1b2c3d4e5f6...'
+          },
+          user: { $ref: '#/components/schemas/UserResponse' }
+        }
+      },
+      RefreshTokenInput: {
+        type: 'object',
+        required: ['refreshToken'],
+        properties: {
+          refreshToken: {
+            type: 'string',
+            example: 'a1b2c3d4e5f6...'
+          }
+        }
+      },
+      RefreshTokenResponse: {
+        type: 'object',
+        properties: {
+          accessToken: {
+            type: 'string',
+            example: 'eyJhbGciOiJIUzI1NiIs...'
+          },
+          refreshToken: {
+            type: 'string',
+            example: 'f6e5d4c3b2a1...'
+          }
+        }
+      }
+    },
+    securitySchemes: {
+      bearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT'
       }
     },
     responses: {
@@ -765,6 +955,22 @@ export const openApiSpec = {
           }
         }
       },
+      UnauthorizedError: {
+        description: 'Não autorizado',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'string',
+                  example: 'Token invalid or expired'
+                }
+              }
+            }
+          }
+        }
+      },
       ForbiddenError: {
         description: 'Acesso negado',
         content: {
@@ -773,6 +979,22 @@ export const openApiSpec = {
               type: 'object',
               properties: {
                 error: { type: 'string', example: 'Cannot delete this user' }
+              }
+            }
+          }
+        }
+      },
+      TooManyRequests: {
+        description: 'Muitas requisições',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                error: {
+                  type: 'string',
+                  example: 'Too many requests, please try again later'
+                }
               }
             }
           }

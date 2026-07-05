@@ -11,7 +11,7 @@ export const globalLimiter = rateLimit({
 })
 
 export const loginLimiter = rateLimit({
-  windowsMs: 18 * 60 * 1000,
+  windowMs: 15 * 60 * 1000,
   max: 5,
   standardHeaders: true,
   legacyHeaders: false,
@@ -21,7 +21,7 @@ export const loginLimiter = rateLimit({
 })
 
 export const refreshLimiter = rateLimit({
-  windowsMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000,
   max: 10,
   standardHeaders: true,
   legacyHeaders: false,
@@ -31,7 +31,7 @@ export const refreshLimiter = rateLimit({
 })
 
 export const createUserLimiter = rateLimit({
-  windowsMs: 60 * 60 * 1000,
+  windowMs: 60 * 60 * 1000,
   max: 3,
   standardHeaders: true,
   legacyHeaders: false,
