@@ -17,6 +17,8 @@ describe('UpdateUserController', () => {
     const controller = new UpdateUserController(updateUserUseCase)
 
     const req = {
+      userId: 'user-123',
+      userRole: 'user',
       params: {
         id: '1'
       },
@@ -39,7 +41,12 @@ describe('UpdateUserController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(updateUserUseCase.execute).toHaveBeenCalledWith('1', req.body)
+    expect(updateUserUseCase.execute).toHaveBeenCalledWith(
+      '1',
+      req.body,
+      req.userId,
+      req.userRole
+    )
     expect(updateUserUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(res.status).toHaveBeenCalledWith(200)
@@ -62,6 +69,8 @@ describe('UpdateUserController', () => {
     const controller = new UpdateUserController(updateUserUseCase)
 
     const req = {
+      userId: 'user-123',
+      userRole: 'user',
       params: {
         id: '999'
       },
@@ -80,7 +89,12 @@ describe('UpdateUserController', () => {
     await controller.handle(req, res, next)
 
     // Assert
-    expect(updateUserUseCase.execute).toHaveBeenCalledWith('999', req.body)
+    expect(updateUserUseCase.execute).toHaveBeenCalledWith(
+      '999',
+      req.body,
+      req.userId,
+      req.userRole
+    )
     expect(updateUserUseCase.execute).toHaveBeenCalledTimes(1)
 
     expect(next).toHaveBeenCalledWith(error)

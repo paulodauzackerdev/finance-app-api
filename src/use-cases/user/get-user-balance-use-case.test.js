@@ -7,9 +7,11 @@ describe('GetUserBalanceUseCase', () => {
   let getUserBalanceUseCase
   let mockTransactionRepository
   let mockUserRepository
+  const authenticatedUserId = faker.string.uuid()
+  const authenticatedUserRole = 'user'
 
   const mockUser = {
-    id: faker.string.uuid(),
+    id: authenticatedUserId,
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     email: faker.internet.email()
@@ -41,12 +43,16 @@ describe('GetUserBalanceUseCase', () => {
 
   describe('execute', () => {
     it('should get user balance successfully', async () => {
-      const userId = faker.string.uuid()
+      const userId = authenticatedUserId
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockTransactionRepository.getUserBalance.mockResolvedValue(mockBalance)
 
-      const result = await getUserBalanceUseCase.execute(userId)
+      const result = await getUserBalanceUseCase.execute(
+        userId,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
       expect(mockTransactionRepository.getUserBalance).toHaveBeenCalledWith(
@@ -63,16 +69,20 @@ describe('GetUserBalanceUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(null)
 
-      await expect(getUserBalanceUseCase.execute(userId)).rejects.toThrow(
-        UserNotFoundError
-      )
+      await expect(
+        getUserBalanceUseCase.execute(userId, userId, 'admin')
+      ).rejects.toThrow(UserNotFoundError)
 
       expect(mockTransactionRepository.getUserBalance).not.toHaveBeenCalled()
     })
 
     it('should throw ZodError if invalid userId is provided', async () => {
       await expect(
-        getUserBalanceUseCase.execute('invalid-uuid')
+        getUserBalanceUseCase.execute(
+          'invalid-uuid',
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockUserRepository.findById).not.toHaveBeenCalled()
@@ -85,23 +95,27 @@ describe('GetUserBalanceUseCase', () => {
 
       mockUserRepository.findById.mockRejectedValue(dbError)
 
-      await expect(getUserBalanceUseCase.execute(userId)).rejects.toThrow(
-        'Database connection failed'
-      )
+      await expect(
+        getUserBalanceUseCase.execute(userId, userId, 'admin')
+      ).rejects.toThrow('Database connection failed')
 
       expect(mockTransactionRepository.getUserBalance).not.toHaveBeenCalled()
     })
 
     it('should throw if transaction repository fails', async () => {
-      const userId = faker.string.uuid()
+      const userId = authenticatedUserId
       const dbError = new Error('Database connection failed')
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockTransactionRepository.getUserBalance.mockRejectedValue(dbError)
 
-      await expect(getUserBalanceUseCase.execute(userId)).rejects.toThrow(
-        'Database connection failed'
-      )
+      await expect(
+        getUserBalanceUseCase.execute(
+          userId,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
+      ).rejects.toThrow('Database connection failed')
 
       expect(mockUserRepository.findById).toHaveBeenCalled()
       expect(mockTransactionRepository.getUserBalance).toHaveBeenCalled()

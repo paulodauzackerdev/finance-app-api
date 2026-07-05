@@ -14,9 +14,11 @@ jest.mock('../../helpers/user.js', () => ({
 describe('SoftDeleteUserUseCase', () => {
   let softDeleteUserUseCase
   let mockUserRepository
+  const authenticatedUserId = faker.string.uuid()
+  const authenticatedUserRole = 'user'
 
   const mockUser = {
-    id: faker.string.uuid(),
+    id: authenticatedUserId,
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     email: faker.internet.email(),
@@ -49,13 +51,17 @@ describe('SoftDeleteUserUseCase', () => {
 
   describe('execute', () => {
     it('should soft delete a user successfully', async () => {
-      const userId = faker.string.uuid()
+      const userId = authenticatedUserId
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockUserRepository.softDelete.mockResolvedValue(mockDeletedUser)
       removePasswordFromUser.mockReturnValue(mockUserWithoutPassword)
 
-      const result = await softDeleteUserUseCase.execute(userId)
+      const result = await softDeleteUserUseCase.execute(
+        userId,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
       expect(mockUserRepository.softDelete).toHaveBeenCalledWith(userId)
@@ -69,9 +75,9 @@ describe('SoftDeleteUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(null)
 
-      await expect(softDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        UserNotFoundError
-      )
+      await expect(
+        softDeleteUserUseCase.execute(userId, authenticatedUserId, 'admin')
+      ).rejects.toThrow(UserNotFoundError)
 
       expect(mockUserRepository.softDelete).not.toHaveBeenCalled()
     })
@@ -83,9 +89,9 @@ describe('SoftDeleteUserUseCase', () => {
       process.env.ADMIN_USER_ID = adminUserId
       mockUserRepository.findById.mockResolvedValue(adminUser)
 
-      await expect(softDeleteUserUseCase.execute(adminUserId)).rejects.toThrow(
-        ForbiddenUserDeletionError
-      )
+      await expect(
+        softDeleteUserUseCase.execute(adminUserId, adminUserId, 'user')
+      ).rejects.toThrow(ForbiddenUserDeletionError)
 
       expect(mockUserRepository.softDelete).not.toHaveBeenCalled()
 
@@ -93,21 +99,29 @@ describe('SoftDeleteUserUseCase', () => {
     })
 
     it('should throw UserNotFoundError when softDelete returns null', async () => {
-      const userId = faker.string.uuid()
+      const userId = authenticatedUserId
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockUserRepository.softDelete.mockResolvedValue(null)
 
-      await expect(softDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        UserNotFoundError
-      )
+      await expect(
+        softDeleteUserUseCase.execute(
+          userId,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
+      ).rejects.toThrow(UserNotFoundError)
 
       expect(mockUserRepository.softDelete).toHaveBeenCalledWith(userId)
     })
 
     it('should throw ZodError for invalid UUID', async () => {
       await expect(
-        softDeleteUserUseCase.execute('invalid-uuid')
+        softDeleteUserUseCase.execute(
+          'invalid-uuid',
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(ZodError)
 
       expect(mockUserRepository.findById).not.toHaveBeenCalled()
@@ -115,14 +129,18 @@ describe('SoftDeleteUserUseCase', () => {
     })
 
     it('should propagate error if repository fails', async () => {
-      const userId = faker.string.uuid()
+      const userId = authenticatedUserId
       const dbError = new Error('Database connection failed')
 
       mockUserRepository.findById.mockRejectedValue(dbError)
 
-      await expect(softDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        'Database connection failed'
-      )
+      await expect(
+        softDeleteUserUseCase.execute(
+          userId,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
+      ).rejects.toThrow('Database connection failed')
 
       expect(mockUserRepository.softDelete).not.toHaveBeenCalled()
     })

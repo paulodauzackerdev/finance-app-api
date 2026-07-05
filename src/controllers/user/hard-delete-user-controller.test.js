@@ -22,6 +22,8 @@ describe('HardDeleteUserController', () => {
     const controller = new HardDeleteUserController(hardDeleteUserUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'admin',
       params: {
         id: '550e8400-e29b-41d4-a716-446655440000'
       }
@@ -42,7 +44,9 @@ describe('HardDeleteUserController', () => {
 
     // Assert
     expect(hardDeleteUserUseCase.execute).toHaveBeenCalledWith(
-      '550e8400-e29b-41d4-a716-446655440000'
+      '550e8400-e29b-41d4-a716-446655440000',
+      req.userId,
+      req.userRole
     )
     expect(hardDeleteUserUseCase.execute).toHaveBeenCalledTimes(1)
 
@@ -66,6 +70,8 @@ describe('HardDeleteUserController', () => {
     const controller = new HardDeleteUserController(hardDeleteUserUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'admin',
       params: {
         id: '550e8400-e29b-41d4-a716-446655440000'
       }
@@ -82,7 +88,9 @@ describe('HardDeleteUserController', () => {
 
     // Assert
     expect(hardDeleteUserUseCase.execute).toHaveBeenCalledWith(
-      '550e8400-e29b-41d4-a716-446655440000'
+      '550e8400-e29b-41d4-a716-446655440000',
+      req.userId,
+      req.userRole
     )
     expect(hardDeleteUserUseCase.execute).toHaveBeenCalledTimes(1)
 

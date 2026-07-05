@@ -8,7 +8,11 @@ export class HardDeleteUserController {
   handle = async (req, res, next) => {
     try {
       const { id } = req.params
-      const hardDeletedUser = await this.hardDeleteUserUseCase.execute(id)
+      const hardDeletedUser = await this.hardDeleteUserUseCase.execute(
+        id,
+        req.userId,
+        req.userRole
+      )
       return ok(res, {
         message: 'User permanently deleted successfully',
         user: hardDeletedUser

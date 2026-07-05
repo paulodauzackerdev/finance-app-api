@@ -4,7 +4,8 @@ import { userIdSchema } from '../../schemas/user/user.schema.js'
 
 import {
   UserNotFoundError,
-  ForbiddenUserDeletionError
+  ForbiddenUserDeletionError,
+  ForbiddenUserAccessError
 } from '../../errors/user.js'
 
 export class HardDeleteUserUseCase {
@@ -12,8 +13,12 @@ export class HardDeleteUserUseCase {
     this.userRepository = userRepository
   }
 
-  async execute(userId) {
+  async execute(userId, authenticatedUserId, authenticatedUserRole) {
     const validatedUserId = userIdSchema.parse(userId)
+
+    if (authenticatedUserRole !== 'admin') {
+      throw new ForbiddenUserAccessError()
+    }
 
     const existingUser = await this.userRepository.findById(
       validatedUserId,
@@ -30,13 +35,8 @@ export class HardDeleteUserUseCase {
       throw new ForbiddenUserDeletionError()
     }
 
-    const hardDeletedUser =
-      await this.userRepository.hardDelete(validatedUserId)
+    await this.userRepository.hardDelete(validatedUserId)
 
-    if (!hardDeletedUser) {
-      throw new UserNotFoundError()
-    }
-
-    return removePasswordFromUser(hardDeletedUser)
+    return removePasswordFromUser(existingUser)
   }
 }

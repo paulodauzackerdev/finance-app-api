@@ -8,7 +8,11 @@ export class RestoreUserController {
   handle = async (req, res, next) => {
     try {
       const { id } = req.params
-      const restoredUser = await this.restoreUserUseCase.execute(id)
+      const restoredUser = await this.restoreUserUseCase.execute(
+        id,
+        req.userId,
+        req.userRole
+      )
       return ok(res, {
         message: 'User restored successfully',
         user: restoredUser

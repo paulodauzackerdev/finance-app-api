@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 import { ZodError } from 'zod'
 import { CreateUserUseCase } from './create-user-use-case.js'
 import { passwordHelper } from '../../helpers/password.js'
-import { UserAlreadyExistsError, UserDeletedError } from '../../errors/user.js'
+import { UserAlreadyExistsError } from '../../errors/user.js'
 
 jest.mock('../../helpers/password.js', () => ({
   passwordHelper: {
@@ -84,11 +84,11 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    it('should throw UserDeletedError when email exists but is soft-deleted', async () => {
+    it('should throw UserAlreadyExistsError when email exists but is soft-deleted (mensagem genérica)', async () => {
       mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
       await expect(createUserUseCase.execute(validUserParams)).rejects.toThrow(
-        UserDeletedError
+        UserAlreadyExistsError
       )
 
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
@@ -129,7 +129,7 @@ describe('CreateUserUseCase', () => {
       expect(mockUserRepository.create).not.toHaveBeenCalled()
     })
 
-    it('should throw UserDeletedError with uppercase email (Zod lowercases) when email is deleted', async () => {
+    it('should throw UserAlreadyExistsError with uppercase email (Zod lowercases) when email is deleted', async () => {
       const paramsWithUpperCaseEmail = {
         ...validUserParams,
         email: 'JOAO@EMAIL.COM'
@@ -139,7 +139,7 @@ describe('CreateUserUseCase', () => {
 
       await expect(
         createUserUseCase.execute(paramsWithUpperCaseEmail)
-      ).rejects.toThrow(UserDeletedError)
+      ).rejects.toThrow(UserAlreadyExistsError)
 
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         'joao@email.com',

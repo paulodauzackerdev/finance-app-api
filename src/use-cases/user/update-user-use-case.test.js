@@ -17,9 +17,11 @@ jest.mock('../../helpers/password.js', () => ({
 describe('UpdateUserUseCase', () => {
   let updateUserUseCase
   let mockUserRepository
+  const authenticatedUserId = faker.string.uuid()
+  const authenticatedUserRole = 'user'
 
   const mockExistingUser = {
-    id: faker.string.uuid(),
+    id: authenticatedUserId,
     firstName: 'João',
     lastName: 'Silva',
     email: 'joao@email.com'
@@ -47,7 +49,12 @@ describe('UpdateUserUseCase', () => {
         firstName: 'João Carlos'
       })
 
-      const result = await updateUserUseCase.execute(userId, updateParams)
+      const result = await updateUserUseCase.execute(
+        userId,
+        updateParams,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId)
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
@@ -64,7 +71,12 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findById.mockResolvedValue(null)
 
       await expect(
-        updateUserUseCase.execute(userId, updateParams)
+        updateUserUseCase.execute(
+          userId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(UserNotFoundError)
     })
 
@@ -77,7 +89,12 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(anotherUser)
 
       await expect(
-        updateUserUseCase.execute(userId, updateParams)
+        updateUserUseCase.execute(
+          userId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(UserAlreadyExistsError)
     })
 
@@ -94,7 +111,12 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.findByEmail.mockResolvedValue(deletedUser)
 
       await expect(
-        updateUserUseCase.execute(userId, updateParams)
+        updateUserUseCase.execute(
+          userId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(UserDeletedError)
     })
 
@@ -107,7 +129,12 @@ describe('UpdateUserUseCase', () => {
       passwordHelper.hash.mockResolvedValue(hashedPassword)
       mockUserRepository.update.mockResolvedValue(mockExistingUser)
 
-      await updateUserUseCase.execute(userId, updateParams)
+      await updateUserUseCase.execute(
+        userId,
+        updateParams,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(passwordHelper.hash).toHaveBeenCalledWith('NovaSenha123!')
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
@@ -124,7 +151,12 @@ describe('UpdateUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
 
-      const result = await updateUserUseCase.execute(userId, updateParams)
+      const result = await updateUserUseCase.execute(
+        userId,
+        updateParams,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(
@@ -140,7 +172,12 @@ describe('UpdateUserUseCase', () => {
       const updateParams = { firstName: 'Teste' }
 
       await expect(
-        updateUserUseCase.execute(invalidUserId, updateParams)
+        updateUserUseCase.execute(
+          invalidUserId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(ZodError)
     })
 
@@ -149,7 +186,12 @@ describe('UpdateUserUseCase', () => {
       const updateParams = {}
 
       await expect(
-        updateUserUseCase.execute(userId, updateParams)
+        updateUserUseCase.execute(
+          userId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow(ZodError)
     })
 
@@ -163,7 +205,12 @@ describe('UpdateUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(mockExistingUser)
 
-      const result = await updateUserUseCase.execute(userId, updateParams)
+      const result = await updateUserUseCase.execute(
+        userId,
+        updateParams,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.update).not.toHaveBeenCalled()
       expect(result).toEqual(expect.objectContaining(mockExistingUser))
@@ -184,7 +231,12 @@ describe('UpdateUserUseCase', () => {
         ...updateParams
       })
 
-      const result = await updateUserUseCase.execute(userId, updateParams)
+      const result = await updateUserUseCase.execute(
+        userId,
+        updateParams,
+        authenticatedUserId,
+        authenticatedUserRole
+      )
 
       expect(mockUserRepository.update).toHaveBeenCalledWith(userId, {
         firstName: 'Carlos',
@@ -205,7 +257,12 @@ describe('UpdateUserUseCase', () => {
       mockUserRepository.update.mockRejectedValue(dbError)
 
       await expect(
-        updateUserUseCase.execute(userId, updateParams)
+        updateUserUseCase.execute(
+          userId,
+          updateParams,
+          authenticatedUserId,
+          authenticatedUserRole
+        )
       ).rejects.toThrow('Database connection failed')
     })
   })

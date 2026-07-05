@@ -10,7 +10,8 @@ import {
 import {
   UserNotFoundError,
   UserAlreadyExistsError,
-  UserDeletedError
+  UserDeletedError,
+  ForbiddenUserAccessError
 } from '../../errors/user.js'
 
 const SPECIAL_FIELDS = {
@@ -39,8 +40,21 @@ export class UpdateUserUseCase {
     this.userRepository = userRepository
   }
 
-  async execute(userId, updateParams) {
+  async execute(
+    userId,
+    updateParams,
+    authenticatedUserId,
+    authenticatedUserRole
+  ) {
     const validatedUserId = userIdSchema.parse(userId)
+
+    if (
+      authenticatedUserRole !== 'admin' &&
+      validatedUserId !== authenticatedUserId
+    ) {
+      throw new ForbiddenUserAccessError()
+    }
+
     const validatedData = updateUserInputSchema.parse(updateParams)
 
     const existingUser = await this.userRepository.findById(validatedUserId)

@@ -49,17 +49,21 @@ describe('HardDeleteUserUseCase', () => {
 
   describe('execute', () => {
     it('should hard delete a user successfully', async () => {
-      const userId = faker.string.uuid()
+      const userId = mockUser.id
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockUserRepository.hardDelete.mockResolvedValue(mockDeletedUser)
       removePasswordFromUser.mockReturnValue(mockUserWithoutPassword)
 
-      const result = await hardDeleteUserUseCase.execute(userId)
+      const result = await hardDeleteUserUseCase.execute(
+        userId,
+        userId,
+        'admin'
+      )
 
       expect(mockUserRepository.findById).toHaveBeenCalledWith(userId, true)
       expect(mockUserRepository.hardDelete).toHaveBeenCalledWith(userId)
-      expect(removePasswordFromUser).toHaveBeenCalledWith(mockDeletedUser)
+      expect(removePasswordFromUser).toHaveBeenCalledWith(mockUser)
       expect(result).toEqual(mockUserWithoutPassword)
       expect(result).not.toHaveProperty('passwordHash')
     })
@@ -69,9 +73,9 @@ describe('HardDeleteUserUseCase', () => {
 
       mockUserRepository.findById.mockResolvedValue(null)
 
-      await expect(hardDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        UserNotFoundError
-      )
+      await expect(
+        hardDeleteUserUseCase.execute(userId, userId, 'admin')
+      ).rejects.toThrow(UserNotFoundError)
 
       expect(mockUserRepository.hardDelete).not.toHaveBeenCalled()
     })
@@ -83,31 +87,35 @@ describe('HardDeleteUserUseCase', () => {
       process.env.ADMIN_USER_ID = adminUserId
       mockUserRepository.findById.mockResolvedValue(adminUser)
 
-      await expect(hardDeleteUserUseCase.execute(adminUserId)).rejects.toThrow(
-        ForbiddenUserDeletionError
-      )
+      await expect(
+        hardDeleteUserUseCase.execute(adminUserId, adminUserId, 'admin')
+      ).rejects.toThrow(ForbiddenUserDeletionError)
 
       expect(mockUserRepository.hardDelete).not.toHaveBeenCalled()
 
       delete process.env.ADMIN_USER_ID
     })
 
-    it('should throw UserNotFoundError when hardDelete returns null', async () => {
-      const userId = faker.string.uuid()
+    it('should hard delete successfully even when hardDelete returns null', async () => {
+      const userId = mockUser.id
 
       mockUserRepository.findById.mockResolvedValue(mockUser)
       mockUserRepository.hardDelete.mockResolvedValue(null)
+      removePasswordFromUser.mockReturnValue(mockUserWithoutPassword)
 
-      await expect(hardDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        UserNotFoundError
+      const result = await hardDeleteUserUseCase.execute(
+        userId,
+        userId,
+        'admin'
       )
 
       expect(mockUserRepository.hardDelete).toHaveBeenCalledWith(userId)
+      expect(result).toEqual(mockUserWithoutPassword)
     })
 
     it('should throw ZodError for invalid UUID', async () => {
       await expect(
-        hardDeleteUserUseCase.execute('invalid-uuid')
+        hardDeleteUserUseCase.execute('invalid-uuid', mockUser.id, 'admin')
       ).rejects.toThrow(ZodError)
 
       expect(mockUserRepository.findById).not.toHaveBeenCalled()
@@ -115,14 +123,14 @@ describe('HardDeleteUserUseCase', () => {
     })
 
     it('should propagate error if repository fails', async () => {
-      const userId = faker.string.uuid()
+      const userId = mockUser.id
       const dbError = new Error('Database connection failed')
 
       mockUserRepository.findById.mockRejectedValue(dbError)
 
-      await expect(hardDeleteUserUseCase.execute(userId)).rejects.toThrow(
-        'Database connection failed'
-      )
+      await expect(
+        hardDeleteUserUseCase.execute(userId, userId, 'admin')
+      ).rejects.toThrow('Database connection failed')
 
       expect(mockUserRepository.hardDelete).not.toHaveBeenCalled()
     })

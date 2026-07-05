@@ -9,7 +9,12 @@ export class UpdateUserController {
   handle = async (req, res, next) => {
     try {
       const { id } = req.params
-      const user = await this.updateUserUseCase.execute(id, req.body)
+      const user = await this.updateUserUseCase.execute(
+        id,
+        req.body,
+        req.userId,
+        req.userRole
+      )
       return ok(res, user)
     } catch (error) {
       next(error)

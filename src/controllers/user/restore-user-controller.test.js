@@ -22,6 +22,8 @@ describe('RestoreUserController', () => {
     const controller = new RestoreUserController(restoreUserUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'admin',
       params: {
         id: '550e8400-e29b-41d4-a716-446655440000'
       }
@@ -42,7 +44,9 @@ describe('RestoreUserController', () => {
 
     // Assert
     expect(restoreUserUseCase.execute).toHaveBeenCalledWith(
-      '550e8400-e29b-41d4-a716-446655440000'
+      '550e8400-e29b-41d4-a716-446655440000',
+      req.userId,
+      req.userRole
     )
     expect(restoreUserUseCase.execute).toHaveBeenCalledTimes(1)
 
@@ -66,6 +70,8 @@ describe('RestoreUserController', () => {
     const controller = new RestoreUserController(restoreUserUseCase)
 
     const req = {
+      userId: '550e8400-e29b-41d4-a716-446655440000',
+      userRole: 'admin',
       params: {
         id: '550e8400-e29b-41d4-a716-446655440000'
       }
@@ -82,7 +88,9 @@ describe('RestoreUserController', () => {
 
     // Assert
     expect(restoreUserUseCase.execute).toHaveBeenCalledWith(
-      '550e8400-e29b-41d4-a716-446655440000'
+      '550e8400-e29b-41d4-a716-446655440000',
+      req.userId,
+      req.userRole
     )
     expect(restoreUserUseCase.execute).toHaveBeenCalledTimes(1)
 
